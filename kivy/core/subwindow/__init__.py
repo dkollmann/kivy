@@ -74,9 +74,9 @@ class SubWindow:
         return w
 
     def _create_popup(self):
-        from kivy.uix.popup import Popup
+        from kivy.uix.subwindow import SubWindow as SubWindowWidget
 
-        return Popup(title = self.title, content = self.root, auto_dismiss = False)
+        return SubWindowWidget(title = self.title, content = self.root, auto_dismiss = False, size_hint=(None, None), size=(100, 100), pos=(20, 20))
 
     def close(self):
         if self.popup is not None:
