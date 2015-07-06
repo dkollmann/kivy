@@ -20,26 +20,30 @@ from kivy.resources import resource_find
 class SubWindow:
     UseNativeWindow = platform != 'ios' and platform != 'android' and False
 
-    def __init__(self):
+    def __init__(self, title = 'Untitled', kv_file = None, modal = True):
         self.root = None
         self.window = None
         self.popup = None
 
-        self.title = 'Untitled'
+        self.title = title
+        self.modal = modal
+
+        self._create_subwindow(kv_file)
 
     def build(self):
         return None
 
-    def _create_subwindow(self, title, kv_file = None):
-        self.title = title
-
+    def _create_subwindow(self, kv_file):
         if not kv_file is None:
-            Logger.debug('Subwindow: Loading kv <{0}>'.format(kv_file))
+            if __debug__:
+                Logger.debug('Subwindow: Loading kv <{0}>'.format(kv_file))
 
             rfilename = resource_find(kv_file)
 
             if rfilename is None or not exists(rfilename):
-                Logger.debug('Subwindow: kv <%s> not found' % kv_file)
+                if __debug__:
+                    Logger.debug('Subwindow: kv <%s> not found' % kv_file)
+
                 return None
 
             self.root = Builder.load_file(rfilename)
