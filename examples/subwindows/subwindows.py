@@ -7,7 +7,7 @@ from kivy.core.subwindow import SubWindow
 
 class SubWindowsApp(App):
     def build(self):
-        return Button(text='show subsindow', on_press=self.show_popup)
+        return Button(text='show subwindow', on_press=self.show_popup)
 
     def show_popup(self, b):
         SubWindow('my subwindow', None, True)

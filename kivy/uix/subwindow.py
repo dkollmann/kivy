@@ -78,7 +78,7 @@ subwindow from closing by explictly returning True from your callback::
 
 __all__ = ('SubWindow', 'SubWindowException')
 
-from kivy.uix.modalview import ModalView
+from kivy.uix.floatmodalview import FloatModalView
 from kivy.properties import (StringProperty, ObjectProperty, OptionProperty,
                              NumericProperty, ListProperty)
 
@@ -91,7 +91,7 @@ class SubWindowException(Exception):
     '''
 
 
-class SubWindow(ModalView):
+class SubWindow(FloatModalView):
     '''SubWindow class. See module documentation for more information.
 
     :Events:
