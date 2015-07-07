@@ -20,20 +20,28 @@ from kivy.resources import resource_find
 class SubWindow:
     UseNativeWindow = platform != 'ios' and platform != 'android' and False
 
-    def __init__(self, title = 'Untitled', kv_file = None, modal = True):
+    def __init__(self, **kwargs):
+        if 'title' not in kwargs:
+            kwargs.setdefault('title', 'Untitled')
+
+        if 'size' not in kwargs and not 'size_hint' in kwargs:
+            kwargs.setdefault('size', (400, 300))
+            kwargs.setdefault('size_hint', (None, None))
+
         self.root = None
         self.window = None
         self.popup = None
 
-        self.title = title
-        self.modal = modal
-
-        self._create_subwindow(kv_file)
+        self._create_subwindow(**kwargs)
 
     def build(self):
         return None
 
-    def _create_subwindow(self, kv_file):
+    def _create_subwindow(self, **kwargs):
+        kv_file = None
+        if 'kv_file' in kwargs:
+            kv_file = kwargs['kv_file']
+
         if not kv_file is None:
             if __debug__:
                 Logger.debug('Subwindow: Loading kv <{0}>'.format(kv_file))
@@ -56,16 +64,16 @@ class SubWindow:
         if SubWindow.UseNativeWindow:
             from kivy.core.window import WindowClass
 
-            self.window = self._create_window()
+            self.window = self._create_window(**kwargs)
         else:
-            self.popup = self._create_popup()
+            self.popup = self._create_popup(**kwargs)
 
             self.popup.open()
 
-    def _create_window(self):
+    def _create_window(self, **kwargs):
         from kivy.core.window import WindowClass
 
-        w = WindowClass()
+        w = WindowClass(**kwargs)
 
         w.set_title(self.title)
 
@@ -73,11 +81,10 @@ class SubWindow:
 
         return w
 
-    def _create_popup(self):
+    def _create_popup(self, **kwargs):
         from kivy.uix.subwindow import SubWindow as SubWindowWidget
 
-        return SubWindowWidget(title = self.title, content = self.root, auto_dismiss = False,
-                               size_hint=(None, None), size=(400, 300), pos=(20, 20))
+        return SubWindowWidget(content = self.root, auto_dismiss = False, **kwargs)
 
     def close(self):
         if self.popup is not None:
