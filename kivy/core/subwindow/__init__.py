@@ -18,7 +18,14 @@ from kivy.lang import Builder
 from kivy.resources import resource_find
 
 class SubWindow:
-    UseNativeWindow = platform != 'ios' and platform != 'android' and False
+    UseNativeWindow = platform != 'ios' and platform != 'android'
+
+    @staticmethod
+    def _getarg(kwargs, key, default):
+        if not key in kwargs:
+            return default
+
+        return kwargs[key]
 
     def __init__(self, **kwargs):
         if 'title' not in kwargs:
@@ -38,9 +45,7 @@ class SubWindow:
         return None
 
     def _create_subwindow(self, **kwargs):
-        kv_file = None
-        if 'kv_file' in kwargs:
-            kv_file = kwargs['kv_file']
+        kv_file = SubWindow._getarg(kwargs, 'kv_file', None)
 
         if not kv_file is None:
             if __debug__:
@@ -61,7 +66,7 @@ class SubWindow:
             if not root is None:
                 self.root = root
 
-        if SubWindow.UseNativeWindow:
+        if SubWindow.UseNativeWindow and SubWindow._getarg(kwargs, 'allowNative', True):
             from kivy.core.window import WindowClass
 
             self.window = self._create_window(**kwargs)
