@@ -1,0 +1,16 @@
+{
+	"subwindows.png":
+	{
+		"subwindow_maximize_normal": [0, 0, 32, 32],
+		"subwindow_maximize_down":   [0, 32, 32, 32],
+
+		"subwindow_minimize_normal": [32, 0, 32, 32],
+		"subwindow_minimize_down":   [32, 32, 32, 32],
+
+		"subwindow_restore_normal":  [64, 0, 32, 32],
+		"subwindow_restore_down":    [64, 32, 32, 32],
+
+		"subwindow_close_normal":    [96, 0, 32, 32],
+		"subwindow_close_down":      [96, 32, 32, 32]
+	}
+}

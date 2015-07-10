@@ -112,29 +112,52 @@ class SubWindow(FloatModalView):
     title_size = NumericProperty('14sp')
     '''Represents the font size of the subwindow title.
 
-    .. versionadded:: 1.6.0
-
     :attr:`title_size` is a :class:`~kivy.properties.NumericProperty` and
     defaults to '14sp'.
     '''
 
-    title_align = OptionProperty('left',
+    title_align = OptionProperty('center',
                                  options=['left', 'center', 'right', 'justify'])
     '''Horizontal alignment of the title.
 
-    .. versionadded:: 1.9.0
-
     :attr:`title_align` is a :class:`~kivy.properties.OptionProperty` and
-    defaults to 'left'. Available options are left, middle, right and justify.
+    defaults to 'center'. Available options are left, center, right and justify.
     '''
 
     title_font = StringProperty('DroidSans')
     '''Font used to render the title text.
 
-    .. versionadded:: 1.9.0
-
     :attr:`title_font` is a :class:`~kivy.properties.StringProperty` and
     defaults to 'DroidSans'.
+    '''
+
+    button_image_source = StringProperty('atlas://data/images/subwindows/')
+    '''The path to the images of the subwindow buttons.
+
+    :attr:`button_image_source` is a :class:`~kivy.properties.StringProperty` and
+    defaults to 'atlas://data/images/subwindows/'.
+    '''
+
+    button_size = NumericProperty('16dp')
+    '''Represents the button size of the subwindow for the maximize, minimize, restore and close button.
+
+    :attr:`button_size` is a :class:`~kivy.properties.NumericProperty` and
+    defaults to '16dp'.
+    '''
+
+    button_spacing = NumericProperty('4dp')
+    '''Represents the spacing between the buttons of the subwindow for the maximize, minimize, restore and close button.
+
+    :attr:`button_spacing` is a :class:`~kivy.properties.NumericProperty` and
+    defaults to '4dp'.
+    '''
+
+    button_align = OptionProperty('right',
+                                 options=['left', 'right'])
+    '''Horizontal alignment of the buttons.
+
+    :attr:`button_align` is a :class:`~kivy.properties.OptionProperty` and
+    defaults to 'right'. Available options are left and right.
     '''
 
     content = ObjectProperty(None)
@@ -147,8 +170,6 @@ class SubWindow(FloatModalView):
     title_color = ListProperty([1, 1, 1, 1])
     '''Color used by the Title.
 
-    .. versionadded:: 1.8.0
-
     :attr:`title_color` is a :class:`~kivy.properties.ListProperty` and
     defaults to [1, 1, 1, 1].
     '''
@@ -156,16 +177,12 @@ class SubWindow(FloatModalView):
     separator_color = ListProperty([47 / 255., 167 / 255., 212 / 255., 1.])
     '''Color used by the separator between title and content.
 
-    .. versionadded:: 1.1.0
-
     :attr:`separator_color` is a :class:`~kivy.properties.ListProperty` and
     defaults to [47 / 255., 167 / 255., 212 / 255., 1.]
     '''
 
     separator_height = NumericProperty('2dp')
     '''Height of the separator.
-
-    .. versionadded:: 1.1.0
 
     :attr:`separator_height` is a :class:`~kivy.properties.NumericProperty` and
     defaults to 2dp.
