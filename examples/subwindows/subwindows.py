@@ -3,7 +3,7 @@ kivy.require('1.0.9')
 
 from kivy.app import App
 from kivy.uix.button import Button
-from kivy.core.subwindow import SubWindow
+from kivy.uix.subwindow import SubWindow
 
 class SubWindowsApp(App):
     def build(self):

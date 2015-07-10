@@ -2,8 +2,6 @@
 SubWindow
 =====
 
-.. versionadded:: 1.0.7
-
 .. image:: images/subwindow.jpg
     :align: right
 
@@ -16,11 +14,6 @@ want your subwindow to be fullscreen, either use size hints with values less tha
 (for instance size_hint=(.8, .8)) or deactivate the size_hint and use
 fixed size attributes.
 
-
-.. versionchanged:: 1.4.0
-    The :class:`SubWindow` class now inherits from
-    :class:`~kivy.uix.modalview.ModalView`. The :class:`SubWindow` offers a default
-    layout with a title and a separation bar.
 
 Examples
 --------
@@ -42,7 +35,7 @@ want that, you can set
 To manually dismiss/close the subwindow, use
 :attr:`~kivy.uix.modalview.ModalView.dismiss`::
 
-    subwindow.dismiss()
+    subwindow.close()
 
 Both :meth:`~kivy.uix.modalview.ModalView.open` and
 :meth:`~kivy.uix.modalview.ModalView.dismiss` are bindable. That means you
@@ -71,12 +64,21 @@ subwindow from closing by explictly returning True from your callback::
         print('SubWindow', instance, 'is being dismissed but is prevented!')
         return True
     subwindow = SubWindow(content=Label(text='Hello world'))
-    subwindow.bind(on_dismiss=my_callback)
+    subwindow.bind(on_close=my_callback)
     subwindow.open()
 
 '''
 
-__all__ = ('SubWindow', 'SubWindowException')
+__all__ = ('SubWindowRequestCloseEvent', 'SubWindowPopup', 'SubWindow', 'SubWindowBase', 'SubWindowException')
+
+from os.path import exists
+
+from kivy import platform
+from kivy.logger import Logger
+from kivy.lang import Builder
+from kivy.resources import resource_find
+from kivy.event import EventDispatcher
+from kivy.core.window import WindowClass
 
 from kivy.uix.floatmodalview import FloatModalView
 from kivy.properties import (StringProperty, ObjectProperty, OptionProperty,
@@ -86,27 +88,219 @@ from kivy.properties import (StringProperty, ObjectProperty, OptionProperty,
 class SubWindowException(Exception):
     '''SubWindow exception, fired when multiple content widgets are added to the
     subwindow.
-
-    .. versionadded:: 1.4.0
     '''
 
 
-class SubWindow(FloatModalView):
-    '''SubWindow class. See module documentation for more information.
+class SubWindowRequestCloseEvent:
+    def __init__(self, force):
+        # This attribute is set to tell the event dispatcher if it is okay to close the window or not
+        self.mayClose = True
+
+        # If this is true, the value of mayClose will not matter and the window will close anyway
+        self.forceClose = force
+
+
+class SubWindowBase:
+    '''SubWindowBase class. It provides the attributes for both the SubWindow and the SubWindowPopup class.
 
     :Events:
-        `on_open`:
-            Fired when the SubWindow is opened.
-        `on_dismiss`:
-            Fired when the SubWindow is closed. If the callback returns True, the
-            dismiss will be canceled.
+        `on_request_close`
+            Fired when the user or code tries to close the window.
+            `window` The window firing the event.
+            `data`   The SubWindowRequestCloseEvent data.
+
+        `on_close`
+            Fired when the window is closed.
+            `window` The window firing the event.
+
+        `on_maximize`
+            Fired when the window is maximized.
+            `window` The window firing the event.
+
+        `on_minimize`
+            Fired when the window is minimized.
+            `window` The window firing the event.
+
+        `on_restore`
+            Fired when the window is restore.
+            `window` The window firing the event.
+            `wasMinimized` Stores if the window was restored from being minimized or maximized.
     '''
+
+    __events__ = ['on_request_close', 'on_close', 'on_maximize', 'on_minimize', 'on_restore']
 
     title = StringProperty('No title')
     '''String that represents the title of the subwindow.
 
     :attr:`title` is a :class:`~kivy.properties.StringProperty` and defaults to
     'No title'.
+    '''
+
+    content = ObjectProperty(None)
+    '''Content of the subwindow that is displayed just under the title.
+
+    :attr:`content` is an :class:`~kivy.properties.ObjectProperty` and defaults
+    to None.
+    '''
+
+    def __init__(self, **kwargs):
+        pass
+
+    def _close(self):
+        if self.popup is not None:
+            self.popup.dismiss()
+
+        if self.window is not None:
+            self.window.close()
+
+    # Try to close the window
+    def close(self, force = False):
+        e = SubWindowRequestCloseEvent(force)
+
+        self.dispatch('on_request_close', self, e)
+
+        if force or e.mayClose:
+            self.dispatch('on_close', self)
+
+            self._close()
+
+    # Maximize the window
+    def maximize(self):
+        if self._maximized:
+            return
+
+        self._maximized = True
+
+        self.dispatch('on_maximize', self)
+
+    # Minimize the window
+    def minimize(self):
+        if self._minimized:
+            return
+
+        self._minimized = True
+
+        self.dispatch('on_minimize', self)
+
+    # Restore the window
+    def restore(self):
+        if self._minimized:
+            self._minimized = False
+
+            self.dispatch('on_restore', self, True)
+
+        elif self._maximized:
+            self._maximized = False
+
+            self.dispatch('on_restore', self, False)
+
+    def on_request_close(self, window, event):
+        return True
+
+    def on_close(self, window):
+        pass
+
+    def on_maximize(self, window):
+        pass
+
+    def on_minimize(self, window):
+        pass
+
+    def on_restore(self, window, wasMinimized):
+        pass
+
+
+class SubWindowNative(WindowClass):
+    pass
+
+
+class SubWindow(EventDispatcher, SubWindowBase):
+    '''SubWindow class. It will create a kivy.uix.SubWindow or a native window as required.
+    '''
+
+    UseNativeWindow = platform != 'ios' and platform != 'android'
+
+    @staticmethod
+    def _getarg(kwargs, key, default):
+        if not key in kwargs:
+            return default
+
+        return kwargs[key]
+
+    def __init__(self, **kwargs):
+        super(SubWindowBase, self).__init__(**kwargs)
+        super(EventDispatcher, self).__init__(**kwargs)
+
+        assert 'owner' not in kwargs
+
+        kwargs['owner'] = self
+
+        if 'title' not in kwargs:
+            kwargs.setdefault('title', 'Untitled')
+
+        if 'size' not in kwargs and not 'size_hint' in kwargs:
+            kwargs.setdefault('size', (400, 300))
+            kwargs.setdefault('size_hint', (None, None))
+
+        self.root = None
+        self.window = None
+        self.popup = None
+
+        self._minimized = False
+        self._maximized = False
+
+        self._create_subwindow(**kwargs)
+
+    def build(self):
+        return None
+
+    def _create_subwindow(self, **kwargs):
+        kv_file = SubWindow._getarg(kwargs, 'kv_file', None)
+
+        if not kv_file is None:
+            if __debug__:
+                Logger.debug('Subwindow: Loading kv <{0}>'.format(kv_file))
+
+            rfilename = resource_find(kv_file)
+
+            if rfilename is None or not exists(rfilename):
+                if __debug__:
+                    Logger.debug('Subwindow: kv <%s> not found' % kv_file)
+
+                return None
+
+            self.root = Builder.load_file(rfilename)
+
+            root = self.build()
+
+            if not root is None:
+                self.root = root
+
+        if SubWindow.UseNativeWindow and SubWindow._getarg(kwargs, 'allowNative', True):
+            from kivy.core.window import WindowClass
+
+            self.window = self._create_window(**kwargs)
+        else:
+            self.popup = self._create_popup(**kwargs)
+
+            self.popup.open()
+
+    def _create_window(self, **kwargs):
+        from kivy.core.subwindow import SubWindowNative
+
+        w = SubWindowNative(**kwargs)
+
+        w.set_title(self.title)
+
+        w.add_widget(self.root)
+
+        return w
+
+    def _create_popup(self, **kwargs):
+        return SubWindowPopup(content = self.root, auto_dismiss = False, **kwargs)
+
+class SubWindowPopup(FloatModalView, SubWindowBase):
+    '''SubWindowPopup class. See module documentation for more information.
     '''
 
     title_size = NumericProperty('14sp')
@@ -129,6 +323,13 @@ class SubWindow(FloatModalView):
 
     :attr:`title_font` is a :class:`~kivy.properties.StringProperty` and
     defaults to 'DroidSans'.
+    '''
+
+    title_color = ListProperty([1, 1, 1, 1])
+    '''Color used by the Title.
+
+    :attr:`title_color` is a :class:`~kivy.properties.ListProperty` and
+    defaults to [1, 1, 1, 1].
     '''
 
     button_image_source = StringProperty('atlas://data/images/subwindows/')
@@ -160,20 +361,6 @@ class SubWindow(FloatModalView):
     defaults to 'right'. Available options are left and right.
     '''
 
-    content = ObjectProperty(None)
-    '''Content of the subwindow that is displayed just under the title.
-
-    :attr:`content` is an :class:`~kivy.properties.ObjectProperty` and defaults
-    to None.
-    '''
-
-    title_color = ListProperty([1, 1, 1, 1])
-    '''Color used by the Title.
-
-    :attr:`title_color` is a :class:`~kivy.properties.ListProperty` and
-    defaults to [1, 1, 1, 1].
-    '''
-
     separator_color = ListProperty([47 / 255., 167 / 255., 212 / 255., 1.])
     '''Color used by the separator between title and content.
 
@@ -192,6 +379,12 @@ class SubWindow(FloatModalView):
 
     _container = ObjectProperty(None)
 
+    def __init__(self, **kwargs):
+        super(SubWindowBase, self).__init__(**kwargs)
+        super(FloatModalView, self).__init__(**kwargs)
+
+        self._owner = SubWindow._getarg(kwargs, 'owner', None)
+
     def add_widget(self, widget):
         if self._container:
             if self.content:
@@ -199,7 +392,7 @@ class SubWindow(FloatModalView):
                     'SubWindow can have only one widget as content')
             self.content = widget
         else:
-            super(SubWindow, self).add_widget(widget)
+            super(SubWindowPopup, self).add_widget(widget)
 
     def on_content(self, instance, value):
         if self._container:
@@ -216,6 +409,22 @@ class SubWindow(FloatModalView):
         if self.disabled and self.collide_point(*touch.pos):
             return True
         return super(SubWindow, self).on_touch_down(touch)
+
+    # Handle when the close button was pressed
+    def _onClose(self, button):
+        self._core.close()
+
+    # Handle when the maximize button was pressed
+    def _onMaximize(self, button):
+        self._core.maximize()
+
+    # Handle when the minimize button was pressed
+    def _onMinimize(self):
+        self._core.minimize()
+
+    # Handle when the restore button was pressed
+    def _onRestore(self):
+        self._core.restore()
 
 
 if __name__ == '__main__':

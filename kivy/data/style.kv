@@ -530,8 +530,8 @@
             size: self.size
 
 
-# SubWindow widget
-<SubWindow>:
+# SubWindowPopup widget
+<SubWindowPopup>:
     _container: container
     GridLayout:
         padding: ('12dp', 0, '12dp', '12dp')
@@ -572,6 +572,7 @@
                     size_hint_x: None
                     width:  root.button_size
                     height: root.button_size
+                    on_press: root._onClose()
 
                 Button:
                     id: button_maximize
@@ -582,6 +583,7 @@
                     size_hint_x: None
                     width:  root.button_size
                     height: root.button_size
+                    on_press: root._onMaximize()
 
                 Button:
                     id: button_minimize
@@ -592,6 +594,7 @@
                     size_hint_x: None
                     width:  root.button_size
                     height: root.button_size
+                    on_press: root._onMinimize()
 
                 Button:
                     id: button_restore
@@ -602,6 +605,7 @@
                     size_hint_x: None
                     width:  root.button_size
                     height: root.button_size
+                    on_press: root._onRestore()
 
         Widget:
             size_hint_y: None
