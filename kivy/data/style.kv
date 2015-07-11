@@ -531,6 +531,19 @@
 
 
 # SubWindowPopup widget
+<SubWindowPopupButton@Button>:
+    image_normal: ''
+    image_down: ''
+    image_size: 24
+
+    border: (0, 0, 0, 0)
+    background_normal: self.image_normal
+    background_down:   self.image_down
+    size_hint_y: None
+    size_hint_x: None
+    width:  self.image_size
+    height: self.image_size
+
 <SubWindowPopup>:
     _container: container
     GridLayout:
@@ -563,48 +576,32 @@
                 size_hint_y: None
                 height: root.button_size
 
-                Button:
+                SubWindowPopupButton:
                     id: button_close
-                    border: (0, 0, 0, 0)
-                    background_normal: root.button_image_source + 'subwindow_close_normal'
-                    background_down:   root.button_image_source + 'subwindow_close_down'
-                    size_hint_y: None
-                    size_hint_x: None
-                    width:  root.button_size
-                    height: root.button_size
+                    image_normal: root.button_image_source + 'subwindow_close_normal'
+                    image_down:   root.button_image_source + 'subwindow_close_down'
+                    image_size:  root.button_size
                     on_press: root._onClose()
 
-                Button:
+                SubWindowPopupButton:
                     id: button_maximize
-                    border: (0, 0, 0, 0)
-                    background_normal: root.button_image_source + 'subwindow_maximize_normal'
-                    background_down:   root.button_image_source + 'subwindow_maximize_down'
-                    size_hint_y: None
-                    size_hint_x: None
-                    width:  root.button_size
-                    height: root.button_size
+                    image_normal: root.button_image_source + 'subwindow_maximize_normal'
+                    image_down:   root.button_image_source + 'subwindow_maximize_down'
+                    image_size:  root.button_size
                     on_press: root._onMaximize()
 
-                Button:
+                SubWindowPopupButton:
                     id: button_minimize
-                    border: (0, 0, 0, 0)
-                    background_normal: root.button_image_source + 'subwindow_minimize_normal'
-                    background_down:   root.button_image_source + 'subwindow_minimize_down'
-                    size_hint_y: None
-                    size_hint_x: None
-                    width:  root.button_size
-                    height: root.button_size
+                    image_normal: root.button_image_source + 'subwindow_minimize_normal'
+                    image_down:   root.button_image_source + 'subwindow_minimize_down'
+                    image_size:  root.button_size
                     on_press: root._onMinimize()
 
-                Button:
+                SubWindowPopupButton:
                     id: button_restore
-                    border: (0, 0, 0, 0)
-                    background_normal: root.button_image_source + 'subwindow_restore_normal'
-                    background_down:   root.button_image_source + 'subwindow_restore_down'
-                    size_hint_y: None
-                    size_hint_x: None
-                    width:  root.button_size
-                    height: root.button_size
+                    image_normal: root.button_image_source + 'subwindow_restore_normal'
+                    image_down:   root.button_image_source + 'subwindow_restore_down'
+                    image_size:  root.button_size
                     on_press: root._onRestore()
 
         Widget:
