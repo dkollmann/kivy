@@ -69,7 +69,7 @@ subwindow from closing by explictly returning True from your callback::
 
 '''
 
-__all__ = ('SubWindowRequestCloseEvent', 'SubWindowPopup', 'SubWindow', 'SubWindowBase', 'SubWindowException')
+__all__ = ('SubWindowPopup', 'SubWindow')
 
 from os.path import exists
 
@@ -129,6 +129,13 @@ class SubWindowBase:
 
     __events__ = ['on_request_close', 'on_close', 'on_maximize', 'on_minimize', 'on_restore']
 
+    type = OptionProperty('resizable', options=['resizable', 'fixed', 'tool'])
+    '''The type of window to be created.
+
+    :attr:`type` is a :class:`~kivy.properties.OptionProperty` and
+    defaults to 'resizable'. Available options are resizable, fixed, and tool.
+    '''
+
     title = StringProperty('No title')
     '''String that represents the title of the subwindow.
 
@@ -171,6 +178,10 @@ class SubWindowBase:
         # This must close the window
         assert False
 
+    def _onSwitch(self):
+        # Must handle the switch
+        assert False
+
     # Try to close the window
     def close(self, force = False):
         e = SubWindowRequestCloseEvent(force)
@@ -190,6 +201,9 @@ class SubWindowBase:
         self.maximized = True
 
         self.dispatch('on_maximize', self)
+
+    def on_maximized(self, window, value):
+        a = 0
 
     # Minimize the window
     def minimize(self):
@@ -245,6 +259,13 @@ class SubWindow(EventDispatcher, SubWindowBase):
     defaults to 'True'.
     '''
 
+    allow_switch = BooleanProperty(True)
+    '''Defines if the window can be switched being native and popup through an additional button.
+
+    :attr:`allow_switch` is a :class:`~kivy.properties.BooleanProperty` and
+    defaults to 'True'.
+    '''
+
     popup = ObjectProperty(None)
     '''SubWindowPopup when not using a native window.
 
@@ -283,6 +304,9 @@ class SubWindow(EventDispatcher, SubWindowBase):
 
         if self.window is not None:
             self.window.close()
+
+    def _onSwitch(self):
+        pass
 
     def build(self):
         return None
@@ -417,6 +441,9 @@ class SubWindowPopup(FloatModalView, SubWindowBase):
     def _close(self):
         self.dismiss()
 
+    def _onSwitch(self):
+        pass
+    
     def add_widget(self, widget):
         if self._container:
             if self.content:

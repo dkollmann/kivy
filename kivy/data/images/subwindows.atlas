@@ -11,6 +11,9 @@
 		"subwindow_restore_down":    [64, 32, 32, 32],
 
 		"subwindow_close_normal":    [96, 0, 32, 32],
-		"subwindow_close_down":      [96, 32, 32, 32]
+		"subwindow_close_down":      [96, 32, 32, 32],
+
+		"subwindow_switch_normal":   [128, 0, 32, 32],
+		"subwindow_switch_down":     [128, 32, 32, 32]
 	}
 }

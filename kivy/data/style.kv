@@ -577,32 +577,39 @@
                 height: root.button_size
 
                 SubWindowPopupButton:
+                    id: button_switch
+                    image_normal: root.button_image_source + 'subwindow_switch_normal'
+                    image_down:   root.button_image_source + 'subwindow_switch_down'
+                    image_size:   root.button_size
+                    on_press:     root._onSwitch()
+
+                SubWindowPopupButton:
                     id: button_close
                     image_normal: root.button_image_source + 'subwindow_close_normal'
                     image_down:   root.button_image_source + 'subwindow_close_down'
-                    image_size:  root.button_size
-                    on_press: root._onClose()
+                    image_size:   root.button_size
+                    on_press:     root._onClose()
 
                 SubWindowPopupButton:
                     id: button_maximize
                     image_normal: root.button_image_source + 'subwindow_maximize_normal'
                     image_down:   root.button_image_source + 'subwindow_maximize_down'
-                    image_size:  root.button_size
-                    on_press: root._onMaximize()
+                    image_size:   root.button_size
+                    on_press:     root._onMaximize()
 
                 SubWindowPopupButton:
                     id: button_minimize
                     image_normal: root.button_image_source + 'subwindow_minimize_normal'
                     image_down:   root.button_image_source + 'subwindow_minimize_down'
-                    image_size:  root.button_size
-                    on_press: root._onMinimize()
+                    image_size:   root.button_size
+                    on_press:     root._onMinimize()
 
                 SubWindowPopupButton:
                     id: button_restore
                     image_normal: root.button_image_source + 'subwindow_restore_normal'
                     image_down:   root.button_image_source + 'subwindow_restore_down'
-                    image_size:  root.button_size
-                    on_press: root._onRestore()
+                    image_size:   root.button_size
+                    on_press:     root._onRestore()
 
         Widget:
             size_hint_y: None
