@@ -82,7 +82,7 @@ from kivy.core.window import WindowClass
 
 from kivy.uix.floatmodalview import FloatModalView
 from kivy.properties import (StringProperty, ObjectProperty, OptionProperty,
-                             NumericProperty, ListProperty)
+                             NumericProperty, ListProperty, BooleanProperty)
 
 
 class SubWindowException(Exception):
@@ -136,6 +136,27 @@ class SubWindowBase:
     'No title'.
     '''
 
+    kv_file = StringProperty('')
+    '''String that holds the path to the kv file to be loaded.
+
+    :attr:`kv_file` is a :class:`~kivy.properties.StringProperty` and defaults to
+    ''.
+    '''
+
+    minimized = BooleanProperty(False)
+    '''Stores if the window is minimzed.
+
+    :attr:`minimized` is a :class:`~kivy.properties.BooleanProperty` and
+    defaults to 'False'.
+    '''
+
+    maximized = BooleanProperty(False)
+    '''Stores if the window is maximized.
+
+    :attr:`maximized` is a :class:`~kivy.properties.BooleanProperty` and
+    defaults to 'False'.
+    '''
+
     content = ObjectProperty(None)
     '''Content of the subwindow that is displayed just under the title.
 
@@ -144,8 +165,7 @@ class SubWindowBase:
     '''
 
     def __init__(self, **kwargs):
-        self._minimized = False
-        self._maximized = False
+        pass
 
     def _close(self):
         # This must close the window
@@ -164,31 +184,31 @@ class SubWindowBase:
 
     # Maximize the window
     def maximize(self):
-        if self._maximized:
+        if self.maximized:
             return
 
-        self._maximized = True
+        self.maximized = True
 
         self.dispatch('on_maximize', self)
 
     # Minimize the window
     def minimize(self):
-        if self._minimized:
+        if self.minimized:
             return
 
-        self._minimized = True
+        self.minimized = True
 
         self.dispatch('on_minimize', self)
 
     # Restore the window
     def restore(self):
-        if self._minimized:
-            self._minimized = False
+        if self.minimized:
+            self.minimized = False
 
             self.dispatch('on_restore', self, True)
 
-        elif self._maximized:
-            self._maximized = False
+        elif self.maximized:
+            self.maximized = False
 
             self.dispatch('on_restore', self, False)
 
@@ -218,6 +238,20 @@ class SubWindow(EventDispatcher, SubWindowBase):
 
     UseNativeWindow = platform != 'ios' and platform != 'android'
 
+    allow_native = BooleanProperty(True)
+    '''Defines if a native window may be created or if it should always be a popup.
+
+    :attr:`allow_native` is a :class:`~kivy.properties.BooleanProperty` and
+    defaults to 'True'.
+    '''
+
+    popup = ObjectProperty(None)
+    '''SubWindowPopup when not using a native window.
+
+    :attr:`popup` is an :class:`~kivy.properties.ObjectProperty` and defaults
+    to None.
+    '''
+
     @staticmethod
     def _getarg(kwargs, key, default):
         if not key in kwargs:
@@ -239,9 +273,7 @@ class SubWindow(EventDispatcher, SubWindowBase):
             kwargs.setdefault('size', (400, 300))
             kwargs.setdefault('size_hint', (None, None))
 
-        self.root = None
         self.window = None
-        self.popup = None
 
         self._create_subwindow(**kwargs)
 
@@ -256,28 +288,27 @@ class SubWindow(EventDispatcher, SubWindowBase):
         return None
 
     def _create_subwindow(self, **kwargs):
-        kv_file = SubWindow._getarg(kwargs, 'kv_file', None)
-
-        if not kv_file is None:
-            if __debug__:
-                Logger.debug('Subwindow: Loading kv <{0}>'.format(kv_file))
-
-            rfilename = resource_find(kv_file)
-
-            if rfilename is None or not exists(rfilename):
+        if self.content is None:
+            if len(self.kv_file) > 0:
                 if __debug__:
-                    Logger.debug('Subwindow: kv <%s> not found' % kv_file)
+                    Logger.debug('Subwindow: Loading kv <{0}>'.format(self.kv_file))
 
-                return None
+                rfilename = resource_find(self.kv_file)
 
-            self.root = Builder.load_file(rfilename)
+                if rfilename is None or not exists(rfilename):
+                    if __debug__:
+                        Logger.debug('Subwindow: kv <%s> not found' % self.kv_file)
 
-            root = self.build()
+                    return None
 
-            if not root is None:
-                self.root = root
+                self.content = Builder.load_file(rfilename)
 
-        if SubWindow.UseNativeWindow and SubWindow._getarg(kwargs, 'allowNative', True):
+                content = self.build()
+
+                if not content is None:
+                    self.content = content
+
+        if SubWindow.UseNativeWindow and self.allow_native:
             from kivy.core.window import WindowClass
 
             self.window = self._create_window(**kwargs)
@@ -291,12 +322,12 @@ class SubWindow(EventDispatcher, SubWindowBase):
 
         w.set_title(self.title)
 
-        w.add_widget(self.root)
+        w.add_widget(self.content)
 
         return w
 
     def _create_popup(self, **kwargs):
-        return SubWindowPopup(content = self.root, auto_dismiss = False, **kwargs)
+        return SubWindowPopup(content = self.content, auto_dismiss = False, **kwargs)
 
 class SubWindowPopup(FloatModalView, SubWindowBase):
     '''SubWindowPopup class. See module documentation for more information.
