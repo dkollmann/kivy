@@ -77,10 +77,11 @@ from kivy import platform
 from kivy.logger import Logger
 from kivy.lang import Builder
 from kivy.resources import resource_find
-from kivy.event import EventDispatcher
 from kivy.core.window import WindowClass
 
 from kivy.uix.floatmodalview import FloatModalView
+from kivy.uix.widget import Widget
+
 from kivy.properties import (StringProperty, ObjectProperty, OptionProperty,
                              NumericProperty, ListProperty, BooleanProperty)
 
@@ -129,11 +130,11 @@ class SubWindowBase:
 
     __events__ = ['on_request_close', 'on_close', 'on_maximize', 'on_minimize', 'on_restore']
 
-    type = OptionProperty('resizable', options=['resizable', 'fixed', 'tool'])
+    type = OptionProperty('resizable', options=['resizable', 'fixed', 'tool', 'borderless'])
     '''The type of window to be created.
 
     :attr:`type` is a :class:`~kivy.properties.OptionProperty` and
-    defaults to 'resizable'. Available options are resizable, fixed, and tool.
+    defaults to 'resizable'. Available options are resizable, fixed, tool and borderless.
     '''
 
     title = StringProperty('No title')
@@ -246,7 +247,7 @@ class SubWindowNative(WindowClass):
     pass
 
 
-class SubWindow(EventDispatcher, SubWindowBase):
+class SubWindow(Widget, SubWindowBase):
     '''SubWindow class. It will create a kivy.uix.SubWindow or a native window as required.
     '''
 
@@ -283,10 +284,6 @@ class SubWindow(EventDispatcher, SubWindowBase):
     def __init__(self, **kwargs):
         super(SubWindow, self).__init__(**kwargs)
 
-        assert 'owner' not in kwargs
-
-        kwargs['owner'] = self
-
         if 'title' not in kwargs:
             kwargs.setdefault('title', 'Untitled')
 
@@ -296,7 +293,31 @@ class SubWindow(EventDispatcher, SubWindowBase):
 
         self.window = None
 
-        self._create_subwindow(**kwargs)
+        if self.popup is None:
+            self._create_subwindow(**kwargs)
+
+    def add_widget(self, widget, index=0, canvas=None):
+        super(SubWindow, self).add_widget(widget, index, canvas)
+
+        if not isinstance(widget, SubWindowPopup):
+            raise SubWindowException("Only one SubWindowPopup object can be added to SubWindow.")
+
+        if not self.popup is None and not self.popup is widget:
+            raise SubWindowException("Only one SubWindowPopup object can be added to SubWindow.")
+
+        self.popup = widget
+
+    def remove_widget(self, widget):
+        super(SubWindow, self).remove_widget(widget)
+
+        if widget is self.popup:
+            self.popup = None
+
+    def on_popup(self, window, value):
+        self.clear_widgets()
+
+        if value is not None:
+            self.add_widget(value)
 
     def _close(self):
         if self.popup is not None:
@@ -436,14 +457,12 @@ class SubWindowPopup(FloatModalView, SubWindowBase):
     def __init__(self, **kwargs):
         super(SubWindowPopup, self).__init__(**kwargs)
 
-        self._owner = SubWindow._getarg(kwargs, 'owner', None)
-
     def _close(self):
         self.dismiss()
 
     def _onSwitch(self):
         pass
-    
+
     def add_widget(self, widget):
         if self._container:
             if self.content:
