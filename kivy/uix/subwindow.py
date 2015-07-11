@@ -144,14 +144,12 @@ class SubWindowBase:
     '''
 
     def __init__(self, **kwargs):
-        pass
+        self._minimized = False
+        self._maximized = False
 
     def _close(self):
-        if self.popup is not None:
-            self.popup.dismiss()
-
-        if self.window is not None:
-            self.window.close()
+        # This must close the window
+        assert False
 
     # Try to close the window
     def close(self, force = False):
@@ -228,8 +226,7 @@ class SubWindow(EventDispatcher, SubWindowBase):
         return kwargs[key]
 
     def __init__(self, **kwargs):
-        super(SubWindowBase, self).__init__(**kwargs)
-        super(EventDispatcher, self).__init__(**kwargs)
+        super(SubWindow, self).__init__(**kwargs)
 
         assert 'owner' not in kwargs
 
@@ -246,10 +243,14 @@ class SubWindow(EventDispatcher, SubWindowBase):
         self.window = None
         self.popup = None
 
-        self._minimized = False
-        self._maximized = False
-
         self._create_subwindow(**kwargs)
+
+    def _close(self):
+        if self.popup is not None:
+            self.popup.dismiss()
+
+        if self.window is not None:
+            self.window.close()
 
     def build(self):
         return None
@@ -286,8 +287,6 @@ class SubWindow(EventDispatcher, SubWindowBase):
             self.popup.open()
 
     def _create_window(self, **kwargs):
-        from kivy.core.subwindow import SubWindowNative
-
         w = SubWindowNative(**kwargs)
 
         w.set_title(self.title)
@@ -380,10 +379,12 @@ class SubWindowPopup(FloatModalView, SubWindowBase):
     _container = ObjectProperty(None)
 
     def __init__(self, **kwargs):
-        super(SubWindowBase, self).__init__(**kwargs)
-        super(FloatModalView, self).__init__(**kwargs)
+        super(SubWindowPopup, self).__init__(**kwargs)
 
         self._owner = SubWindow._getarg(kwargs, 'owner', None)
+
+    def _close(self):
+        self.dismiss()
 
     def add_widget(self, widget):
         if self._container:
@@ -408,23 +409,23 @@ class SubWindowPopup(FloatModalView, SubWindowBase):
     def on_touch_down(self, touch):
         if self.disabled and self.collide_point(*touch.pos):
             return True
-        return super(SubWindow, self).on_touch_down(touch)
+        return super(SubWindowPopup, self).on_touch_down(touch)
 
     # Handle when the close button was pressed
-    def _onClose(self, button):
-        self._core.close()
+    def _onClose(self):
+        self.close()
 
     # Handle when the maximize button was pressed
-    def _onMaximize(self, button):
-        self._core.maximize()
+    def _onMaximize(self):
+        self.maximize()
 
     # Handle when the minimize button was pressed
     def _onMinimize(self):
-        self._core.minimize()
+        self.minimize()
 
     # Handle when the restore button was pressed
     def _onRestore(self):
-        self._core.restore()
+        self.restore()
 
 
 if __name__ == '__main__':
