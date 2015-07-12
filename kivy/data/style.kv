@@ -530,6 +530,9 @@
             size: self.size
 
 
+# SubWindow widget
+<SubWindow>:
+
 # SubWindowPopup widget
 <SubWindowPopupButton@Button>:
     image_normal: ''
@@ -546,6 +549,13 @@
 
 <SubWindowPopup>:
     _container: container
+
+    _button_switch: button_switch
+    _button_close: button_close
+    _button_maximize: button_maximize
+    _button_minimize: button_minimize
+    _button_restore: button_restore
+
     GridLayout:
         padding: ('12dp', 0, '12dp', '12dp')
         cols: 1

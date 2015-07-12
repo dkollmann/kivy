@@ -78,9 +78,11 @@ from kivy.logger import Logger
 from kivy.lang import Builder
 from kivy.resources import resource_find
 from kivy.core.window import WindowClass
+from kivy.clock import Clock
 
 from kivy.uix.floatmodalview import FloatModalView
 from kivy.uix.widget import Widget
+from kivy.uix.floatlayout import FloatLayout
 
 from kivy.properties import (StringProperty, ObjectProperty, OptionProperty,
                              NumericProperty, ListProperty, BooleanProperty)
@@ -247,7 +249,7 @@ class SubWindowNative(WindowClass):
     pass
 
 
-class SubWindow(Widget, SubWindowBase):
+class SubWindow(FloatLayout, SubWindowBase):
     '''SubWindow class. It will create a kivy.uix.SubWindow or a native window as required.
     '''
 
@@ -274,6 +276,13 @@ class SubWindow(Widget, SubWindowBase):
     to None.
     '''
 
+    open = BooleanProperty(True)
+    '''Defines if the window is shown. This is useful for predefining windows without having them being visible all the time.
+
+    :attr:`open` is a :class:`~kivy.properties.BooleanProperty` and
+    defaults to 'True'.
+    '''
+
     @staticmethod
     def _getarg(kwargs, key, default):
         if not key in kwargs:
@@ -293,14 +302,28 @@ class SubWindow(Widget, SubWindowBase):
 
         self.window = None
 
-        if self.popup is None:
-            self._create_subwindow(**kwargs)
+        Clock.schedule_once(self._post_init)
 
-    def add_widget(self, widget, index=0, canvas=None):
-        super(SubWindow, self).add_widget(widget, index, canvas)
+    def _post_init(self, dt):
+        if self.popup is None:
+            self._create_subwindow(
+                #pos = self.pos,
+                #pos_hint = self.pos_hint,
+                #size = self.size,
+                #size_hint = self.size_hint,
+                type = self.type,
+                title = self.title,
+                kv_file = self.kv_file,
+                minimized = self.minimized,
+                maximized = self.maximized,
+                content = self.content
+            )
+
+    def add_widget(self, widget, index=0):
+        super(SubWindow, self).add_widget(widget, index)
 
         if not isinstance(widget, SubWindowPopup):
-            raise SubWindowException("Only one SubWindowPopup object can be added to SubWindow.")
+            raise SubWindowException("Only SubWindowPopup objects can be added to SubWindow.")
 
         if not self.popup is None and not self.popup is widget:
             raise SubWindowException("Only one SubWindowPopup object can be added to SubWindow.")
@@ -372,7 +395,7 @@ class SubWindow(Widget, SubWindowBase):
         return w
 
     def _create_popup(self, **kwargs):
-        return SubWindowPopup(content = self.content, auto_dismiss = False, **kwargs)
+        return SubWindowPopup(auto_dismiss = False, **kwargs)
 
 class SubWindowPopup(FloatModalView, SubWindowBase):
     '''SubWindowPopup class. See module documentation for more information.
@@ -453,6 +476,12 @@ class SubWindowPopup(FloatModalView, SubWindowBase):
     # Internal properties used for graphical representation.
 
     _container = ObjectProperty(None)
+
+    _button_switch = ObjectProperty(None)
+    _button_close = ObjectProperty(None)
+    _button_maximize = ObjectProperty(None)
+    _button_minimize = ObjectProperty(None)
+    _button_restore = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super(SubWindowPopup, self).__init__(**kwargs)
