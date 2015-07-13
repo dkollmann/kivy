@@ -559,15 +559,20 @@ class SubWindowPopup(FloatModalView, SubWindowBase):
 
     def update_buttons(self):
         # Update all possible buttons
+        index = 0
         for b in self._buttons:
             b.dispatch('on_visible')
 
             # Check if the visibility changed
             if b._visible and not b in self._buttons_container.children:
-                pass
+                self._buttons_container.add_widget(b, index)
 
             elif not b._visible and b in self._buttons_container.children:
                 self._buttons_container.remove_widget(b)
+
+            # Update index
+                if b._visible:
+                    index += 1
 
     def _close(self):
         self.dismiss()
