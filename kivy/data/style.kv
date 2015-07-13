@@ -609,19 +609,18 @@
                     on_visible:   self.setVisible( root.allow_maximize and not root.maximized and root.type == 'resizable' )
 
                 SubWindowPopupButton:
-                    image_normal: root.button_image_source + 'subwindow_minimize_normal'
-                    image_down:   root.button_image_source + 'subwindow_minimize_down'
-                    image_size:   root.button_size
-                    on_press:     root.minimize()
-                    on_visible:   self.setVisible( root.allow_minimize and (root.type == 'resizable' or root.type == 'fixed') )
-
-                SubWindowPopupButton:
-                    id: button_restore
                     image_normal: root.button_image_source + 'subwindow_restore_normal'
                     image_down:   root.button_image_source + 'subwindow_restore_down'
                     image_size:   root.button_size
                     on_press:     root.restore()
                     on_visible:   self.setVisible( root.maximized )
+
+                SubWindowPopupButton:
+                    image_normal: root.button_image_source + 'subwindow_minimize_normal'
+                    image_down:   root.button_image_source + 'subwindow_minimize_down'
+                    image_size:   root.button_size
+                    on_press:     root.minimize()
+                    on_visible:   self.setVisible( root.allow_minimize and (root.type == 'resizable' or root.type == 'fixed') )
 
         Widget:
             size_hint_y: None

@@ -247,6 +247,10 @@ class SubWindowBase:
 
             self._restore(False)
 
+    # Switch the window between native and popup
+    def switch(self):
+        self._switch()
+
     def on_request_close(self, window, event):
         return True
 
@@ -413,7 +417,7 @@ class SubWindow(Widget, SubWindowBase):
         if self.popup is not None:
             self.popup.open()
 
-    def switch(self):
+    def _switch(self):
         #TODO: Add switch code
         pass
 
@@ -532,6 +536,9 @@ class SubWindowPopup(FloatModalView, SubWindowBase):
     def __init__(self, **kwargs):
         super(SubWindowPopup, self).__init__(**kwargs)
 
+        self._premax_pos = None
+        self._premax_pos_hint = None
+
         # Collect all the buttons so they are still available when removed
         if self._buttons_container is None:
             raise SubWindowException("The buttons container was not assigned.")
@@ -572,9 +579,6 @@ class SubWindowPopup(FloatModalView, SubWindowBase):
             if b._visible:
                 index += 1
 
-    def _close(self):
-        self.dismiss()
-
     def add_widget(self, widget):
         if self._container:
             if self.content:
@@ -600,9 +604,34 @@ class SubWindowPopup(FloatModalView, SubWindowBase):
             return True
         return super(SubWindowPopup, self).on_touch_down(touch)
 
-    def switch(self):
+    def _switch(self):
         if self.owner is not None:
-            self.owner.switch()
+            self.owner._switch()
+
+    def _close(self):
+        self.dismiss()
+
+    def _maximize(self):
+        self._premax_pos = self.pos
+        self._premax_pos_hint = self.pos_hint
+
+        self.pos = (0, 0)
+        self.pos_hint = {}
+        self.size_hint = (1, 1)
+
+        self.update_buttons()
+
+    def _minimize(self):
+        #TODO: Add minimize code
+        pass
+
+    def _restore(self, wasMinimized):
+        if not wasMinimized:
+            self.size_hint = (None, None)
+            self.pos = self._premax_pos
+            self.pos_hint = self._premax_pos_hint
+
+            self.update_buttons()
 
 
 if __name__ == '__main__':
