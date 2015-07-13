@@ -1,9 +1,11 @@
-Widget:
+FloatLayout:
     Button:
         text: 'show subwindow'
-        on_press: root.show_subwindow
+        on_press: subwin.open()
 
     SubWindow:
+        id: subwin
         title: 'my subwindow'
         pos: (50, 50)
+        size: (400, 300)
         allow_native: False

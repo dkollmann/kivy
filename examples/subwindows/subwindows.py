@@ -5,8 +5,7 @@ from kivy.app import App
 from kivy.uix.subwindow import SubWindow
 
 class SubWindowsApp(App):
-    def show_subwindow(self, button):
-        pass
+    pass
 
 if __name__ == '__main__':
     SubWindowsApp().run()

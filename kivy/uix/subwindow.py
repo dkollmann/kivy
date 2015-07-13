@@ -249,7 +249,7 @@ class SubWindowNative(WindowClass):
     pass
 
 
-class SubWindow(FloatLayout, SubWindowBase):
+class SubWindow(Widget, SubWindowBase):
     '''SubWindow class. It will create a kivy.uix.SubWindow or a native window as required.
     '''
 
@@ -307,10 +307,10 @@ class SubWindow(FloatLayout, SubWindowBase):
     def _post_init(self, dt):
         if self.popup is None:
             self._create_subwindow(
-                #pos = self.pos,
-                #pos_hint = self.pos_hint,
-                #size = self.size,
-                #size_hint = self.size_hint,
+                pos = self.pos,
+                pos_hint = self.pos_hint,
+                size = self.size,
+                size_hint = self.size_hint,
                 type = self.type,
                 title = self.title,
                 kv_file = self.kv_file,
@@ -320,8 +320,6 @@ class SubWindow(FloatLayout, SubWindowBase):
             )
 
     def add_widget(self, widget, index=0):
-        super(SubWindow, self).add_widget(widget, index)
-
         if not isinstance(widget, SubWindowPopup):
             raise SubWindowException("Only SubWindowPopup objects can be added to SubWindow.")
 
@@ -331,16 +329,8 @@ class SubWindow(FloatLayout, SubWindowBase):
         self.popup = widget
 
     def remove_widget(self, widget):
-        super(SubWindow, self).remove_widget(widget)
-
         if widget is self.popup:
             self.popup = None
-
-    def on_popup(self, window, value):
-        self.clear_widgets()
-
-        if value is not None:
-            self.add_widget(value)
 
     def _close(self):
         if self.popup is not None:
@@ -383,8 +373,6 @@ class SubWindow(FloatLayout, SubWindowBase):
         else:
             self.popup = self._create_popup(**kwargs)
 
-            self.popup.open()
-
     def _create_window(self, **kwargs):
         w = SubWindowNative(**kwargs)
 
@@ -396,6 +384,10 @@ class SubWindow(FloatLayout, SubWindowBase):
 
     def _create_popup(self, **kwargs):
         return SubWindowPopup(auto_dismiss = False, **kwargs)
+
+    def open(self):
+        if self.popup is not None:
+            self.popup.open()
 
 class SubWindowPopup(FloatModalView, SubWindowBase):
     '''SubWindowPopup class. See module documentation for more information.
