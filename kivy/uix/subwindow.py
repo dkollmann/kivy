@@ -276,11 +276,11 @@ class SubWindow(Widget, SubWindowBase):
     to None.
     '''
 
-    open = BooleanProperty(True)
-    '''Defines if the window is shown. This is useful for predefining windows without having them being visible all the time.
+    auto_open = BooleanProperty(False)
+    '''Defines if the window is shown automatically.
 
-    :attr:`open` is a :class:`~kivy.properties.BooleanProperty` and
-    defaults to 'True'.
+    :attr:`auto_open` is a :class:`~kivy.properties.BooleanProperty` and
+    defaults to 'False'.
     '''
 
     @staticmethod
@@ -305,6 +305,7 @@ class SubWindow(Widget, SubWindowBase):
         Clock.schedule_once(self._post_init)
 
     def _post_init(self, dt):
+        # When there is a popup we assume we should use it
         if self.popup is None:
             self._create_subwindow(
                 pos = self.pos,
@@ -318,6 +319,9 @@ class SubWindow(Widget, SubWindowBase):
                 maximized = self.maximized,
                 content = self.content
             )
+
+        if self.auto_open:
+            self.open()
 
     def add_widget(self, widget, index=0):
         if not isinstance(widget, SubWindowPopup):
