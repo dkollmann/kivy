@@ -82,7 +82,7 @@ from kivy.clock import Clock
 
 from kivy.uix.floatmodalview import FloatModalView
 from kivy.uix.widget import Widget
-from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.button import Button
 
 from kivy.properties import (StringProperty, ObjectProperty, OptionProperty,
                              NumericProperty, ListProperty, BooleanProperty)
@@ -151,6 +151,27 @@ class SubWindowBase:
 
     :attr:`kv_file` is a :class:`~kivy.properties.StringProperty` and defaults to
     ''.
+    '''
+
+    allow_maximize = BooleanProperty(True)
+    '''Defines if the window can be maximized. Must be a resizable window.
+
+    :attr:`allow_maximize` is a :class:`~kivy.properties.BooleanProperty` and
+    defaults to 'True'.
+    '''
+
+    allow_minimize = BooleanProperty(True)
+    '''Defines if the window can be minimized. Must be a resizable or fixed window.
+
+    :attr:`allow_minimize` is a :class:`~kivy.properties.BooleanProperty` and
+    defaults to 'True'.
+    '''
+
+    allow_close = BooleanProperty(True)
+    '''Defines if the window has a close button.
+
+    :attr:`allow_close` is a :class:`~kivy.properties.BooleanProperty` and
+    defaults to 'True'.
     '''
 
     minimized = BooleanProperty(False)
@@ -310,6 +331,9 @@ class SubWindow(Widget, SubWindowBase):
                 kv_file = self.kv_file,
                 minimized = self.minimized,
                 maximized = self.maximized,
+                allow_maximize = self.allow_maximize,
+                allow_minimize = self.allow_minimize,
+                allow_close = self.allow_close,
                 content = self.content
             )
 
@@ -370,6 +394,15 @@ class SubWindow(Widget, SubWindowBase):
         else:
             self.popup = self._create_popup(**kwargs)
 
+    def on_popup(self, window, value):
+        #TODO: The old value of popup needs to have owner set to None
+
+        if value is not None:
+            if not isinstance(value, SubWindowPopup):
+                raise SubWindowException("Only SubWindowPopup objects can be assigned as a popup.")
+
+            value.owner = self
+
     def _create_window(self, **kwargs):
         w = SubWindowNative(**kwargs)
 
@@ -385,6 +418,29 @@ class SubWindow(Widget, SubWindowBase):
     def open(self):
         if self.popup is not None:
             self.popup.open()
+
+
+class SubWindowPopupButton(Button):
+    '''Button class for sub window buttons. Allows you to specify a visibility.
+
+    :Events:
+        `update_visible`
+            Fired when the visibility of the button is updated.
+    '''
+
+    __events__ = ['on_visible']
+
+    def __init__(self, **kwargs):
+        super(SubWindowPopupButton, self).__init__(**kwargs)
+
+        self._visible = True
+
+    def setVisible(self, visible):
+        self._visible = visible
+
+    def on_visible(self):
+        pass
+
 
 class SubWindowPopup(FloatModalView, SubWindowBase):
     '''SubWindowPopup class. See module documentation for more information.
@@ -462,18 +518,56 @@ class SubWindowPopup(FloatModalView, SubWindowBase):
     defaults to 2dp.
     '''
 
+    owner = ObjectProperty(None)
+    '''The SubWindow class owning this class. May be None. Must be set when created by SubWindow class.
+
+    :attr:`owner` is an :class:`~kivy.properties.ObjectProperty` and defaults
+    to None.
+    '''
+
     # Internal properties used for graphical representation.
 
     _container = ObjectProperty(None)
 
-    _button_switch = ObjectProperty(None)
-    _button_close = ObjectProperty(None)
-    _button_maximize = ObjectProperty(None)
-    _button_minimize = ObjectProperty(None)
-    _button_restore = ObjectProperty(None)
+    _buttons_container = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super(SubWindowPopup, self).__init__(**kwargs)
+
+        # Collect all the buttons so they are still available when removed
+        if self._buttons_container is None:
+            raise SubWindowException("The buttons container was not assigned.")
+
+        self._buttons = []
+
+        for b in self._buttons_container.children:
+            if isinstance(b, SubWindowPopupButton):
+                self._buttons.append(b)
+
+        Clock.schedule_once(self._post_init)
+
+    def _post_init(self, dt):
+        self.update_buttons()
+
+    def _remove_button(self, button):
+        b = getattr(self, button)
+
+        if b is not None:
+            b.parent.remove_widget(b)
+
+            setattr(self, button, None)
+
+    def update_buttons(self):
+        # Update all possible buttons
+        for b in self._buttons:
+            b.dispatch('on_visible')
+
+            # Check if the visibility changed
+            if b._visible and not b in self._buttons_container.children:
+                pass
+
+            elif not b._visible and b in self._buttons_container.children:
+                self._buttons_container.remove_widget(b)
 
     def _close(self):
         self.dismiss()

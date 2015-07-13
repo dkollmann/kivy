@@ -536,7 +536,7 @@
     size_hint_x: None
 
 # SubWindowPopup widget
-<SubWindowPopupButton@Button>:
+<SubWindowPopupButton>:
     image_normal: ''
     image_down: ''
     image_size: 24
@@ -552,11 +552,7 @@
 <SubWindowPopup>:
     _container: container
 
-    _button_switch: button_switch
-    _button_close: button_close
-    _button_maximize: button_maximize
-    _button_minimize: button_minimize
-    _button_restore: button_restore
+    _buttons_container: layout_buttons
 
     size_hint_y: None
     size_hint_x: None
@@ -592,32 +588,32 @@
                 height: root.button_size
 
                 SubWindowPopupButton:
-                    id: button_switch
                     image_normal: root.button_image_source + 'subwindow_switch_normal'
                     image_down:   root.button_image_source + 'subwindow_switch_down'
                     image_size:   root.button_size
                     on_press:     root._onSwitch()
+                    on_visible:   self.setVisible( root.owner is not None and root.owner.allow_native )
 
                 SubWindowPopupButton:
-                    id: button_close
                     image_normal: root.button_image_source + 'subwindow_close_normal'
                     image_down:   root.button_image_source + 'subwindow_close_down'
                     image_size:   root.button_size
                     on_press:     root._onClose()
+                    on_visible:   self.setVisible( root.allow_close )
 
                 SubWindowPopupButton:
-                    id: button_maximize
                     image_normal: root.button_image_source + 'subwindow_maximize_normal'
                     image_down:   root.button_image_source + 'subwindow_maximize_down'
                     image_size:   root.button_size
                     on_press:     root._onMaximize()
+                    on_visible:   self.setVisible( root.allow_maximize and not root.maximized and root.type == 'resizable' )
 
                 SubWindowPopupButton:
-                    id: button_minimize
                     image_normal: root.button_image_source + 'subwindow_minimize_normal'
                     image_down:   root.button_image_source + 'subwindow_minimize_down'
                     image_size:   root.button_size
                     on_press:     root._onMinimize()
+                    on_visible:   self.setVisible( root.allow_minimize and (root.type == 'resizable' or root.type == 'fixed') )
 
                 SubWindowPopupButton:
                     id: button_restore
@@ -625,6 +621,7 @@
                     image_down:   root.button_image_source + 'subwindow_restore_down'
                     image_size:   root.button_size
                     on_press:     root._onRestore()
+                    on_visible:   self.setVisible( root.maximized )
 
         Widget:
             size_hint_y: None
