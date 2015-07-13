@@ -77,7 +77,6 @@ from kivy import platform
 from kivy.logger import Logger
 from kivy.lang import Builder
 from kivy.resources import resource_find
-from kivy.core.window import WindowClass
 from kivy.clock import Clock
 
 from kivy.uix.floatmodalview import FloatModalView
@@ -267,8 +266,14 @@ class SubWindowBase:
         pass
 
 
-class SubWindowNative(WindowClass):
-    pass
+class SubWindowNative:
+    def __init__(self, **kwargs):
+        from kivy.core.window import WindowClass
+
+        self._win = WindowClass()
+
+    def open(self):
+        self._win.create_window()
 
 
 class SubWindow(Widget, SubWindowBase):
@@ -386,8 +391,6 @@ class SubWindow(Widget, SubWindowBase):
                     self.content = content
 
         if SubWindow.UseNativeWindow and self.allow_native:
-            from kivy.core.window import WindowClass
-
             self.window = self._create_window(**kwargs)
         else:
             self.popup = self._create_popup(**kwargs)
@@ -404,9 +407,9 @@ class SubWindow(Widget, SubWindowBase):
     def _create_window(self, **kwargs):
         w = SubWindowNative(**kwargs)
 
-        w.set_title(self.title)
+        #w.set_title(self.title)
 
-        w.add_widget(self.content)
+        #w.add_widget(self.content)
 
         return w
 
@@ -416,6 +419,9 @@ class SubWindow(Widget, SubWindowBase):
     def open(self):
         if self.popup is not None:
             self.popup.open()
+
+        if self.window is not None:
+            self.window.open()
 
     def _switch(self):
         #TODO: Add switch code
