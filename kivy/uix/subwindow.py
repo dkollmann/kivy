@@ -571,8 +571,8 @@ class SubWindowPopup(FloatModalView, SubWindowBase):
                 self._buttons_container.remove_widget(b)
 
             # Update index
-                if b._visible:
-                    index += 1
+            if b._visible:
+                index += 1
 
     def _close(self):
         self.dismiss()
