@@ -283,13 +283,6 @@ class SubWindow(Widget, SubWindowBase):
     defaults to 'False'.
     '''
 
-    @staticmethod
-    def _getarg(kwargs, key, default):
-        if not key in kwargs:
-            return default
-
-        return kwargs[key]
-
     def __init__(self, **kwargs):
         super(SubWindow, self).__init__(**kwargs)
 
