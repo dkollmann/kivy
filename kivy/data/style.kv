@@ -591,28 +591,28 @@
                     image_normal: root.button_image_source + 'subwindow_switch_normal'
                     image_down:   root.button_image_source + 'subwindow_switch_down'
                     image_size:   root.button_size
-                    on_press:     root._onSwitch()
+                    on_press:     root.switch()
                     on_visible:   self.setVisible( root.owner is not None and root.owner.allow_native )
 
                 SubWindowPopupButton:
                     image_normal: root.button_image_source + 'subwindow_close_normal'
                     image_down:   root.button_image_source + 'subwindow_close_down'
                     image_size:   root.button_size
-                    on_press:     root._onClose()
+                    on_press:     root.close()
                     on_visible:   self.setVisible( root.allow_close )
 
                 SubWindowPopupButton:
                     image_normal: root.button_image_source + 'subwindow_maximize_normal'
                     image_down:   root.button_image_source + 'subwindow_maximize_down'
                     image_size:   root.button_size
-                    on_press:     root._onMaximize()
+                    on_press:     root.maximize()
                     on_visible:   self.setVisible( root.allow_maximize and not root.maximized and root.type == 'resizable' )
 
                 SubWindowPopupButton:
                     image_normal: root.button_image_source + 'subwindow_minimize_normal'
                     image_down:   root.button_image_source + 'subwindow_minimize_down'
                     image_size:   root.button_size
-                    on_press:     root._onMinimize()
+                    on_press:     root.minimize()
                     on_visible:   self.setVisible( root.allow_minimize and (root.type == 'resizable' or root.type == 'fixed') )
 
                 SubWindowPopupButton:
@@ -620,7 +620,7 @@
                     image_normal: root.button_image_source + 'subwindow_restore_normal'
                     image_down:   root.button_image_source + 'subwindow_restore_down'
                     image_size:   root.button_size
-                    on_press:     root._onRestore()
+                    on_press:     root.restore()
                     on_visible:   self.setVisible( root.maximized )
 
         Widget:

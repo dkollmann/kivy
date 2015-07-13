@@ -202,10 +202,6 @@ class SubWindowBase:
         # This must close the window
         assert False
 
-    def _onSwitch(self):
-        # Must handle the switch
-        assert False
-
     # Try to close the window
     def close(self, force = False):
         e = SubWindowRequestCloseEvent(force)
@@ -225,9 +221,6 @@ class SubWindowBase:
         self.maximized = True
 
         self.dispatch('on_maximize', self)
-
-    def on_maximized(self, window, value):
-        a = 0
 
     # Minimize the window
     def minimize(self):
@@ -360,9 +353,6 @@ class SubWindow(Widget, SubWindowBase):
         if self.window is not None:
             self.window.close()
 
-    def _onSwitch(self):
-        pass
-
     def build(self):
         return None
 
@@ -418,6 +408,9 @@ class SubWindow(Widget, SubWindowBase):
     def open(self):
         if self.popup is not None:
             self.popup.open()
+
+    def switch(self):
+        pass
 
 
 class SubWindowPopupButton(Button):
@@ -577,9 +570,6 @@ class SubWindowPopup(FloatModalView, SubWindowBase):
     def _close(self):
         self.dismiss()
 
-    def _onSwitch(self):
-        pass
-
     def add_widget(self, widget):
         if self._container:
             if self.content:
@@ -605,21 +595,9 @@ class SubWindowPopup(FloatModalView, SubWindowBase):
             return True
         return super(SubWindowPopup, self).on_touch_down(touch)
 
-    # Handle when the close button was pressed
-    def _onClose(self):
-        self.close()
-
-    # Handle when the maximize button was pressed
-    def _onMaximize(self):
-        self.maximize()
-
-    # Handle when the minimize button was pressed
-    def _onMinimize(self):
-        self.minimize()
-
-    # Handle when the restore button was pressed
-    def _onRestore(self):
-        self.restore()
+    def switch(self):
+        if self.owner is not None:
+            self.owner.switch()
 
 
 if __name__ == '__main__':
