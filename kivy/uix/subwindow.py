@@ -198,10 +198,6 @@ class SubWindowBase:
     def __init__(self, **kwargs):
         pass
 
-    def _close(self):
-        # This must close the window
-        assert False
-
     # Try to close the window
     def close(self, force = False):
         e = SubWindowRequestCloseEvent(force)
@@ -222,6 +218,8 @@ class SubWindowBase:
 
         self.dispatch('on_maximize', self)
 
+        self._maximize()
+
     # Minimize the window
     def minimize(self):
         if self.minimized:
@@ -231,6 +229,8 @@ class SubWindowBase:
 
         self.dispatch('on_minimize', self)
 
+        self._minimize()
+
     # Restore the window
     def restore(self):
         if self.minimized:
@@ -238,10 +238,14 @@ class SubWindowBase:
 
             self.dispatch('on_restore', self, True)
 
+            self._restore(True)
+
         elif self.maximized:
             self.maximized = False
 
             self.dispatch('on_restore', self, False)
+
+            self._restore(False)
 
     def on_request_close(self, window, event):
         return True
@@ -348,10 +352,10 @@ class SubWindow(Widget, SubWindowBase):
 
     def _close(self):
         if self.popup is not None:
-            self.popup.dismiss()
+            self.popup._close()
 
         if self.window is not None:
-            self.window.close()
+            self.window._close()
 
     def build(self):
         return None
@@ -410,6 +414,7 @@ class SubWindow(Widget, SubWindowBase):
             self.popup.open()
 
     def switch(self):
+        #TODO: Add switch code
         pass
 
 
