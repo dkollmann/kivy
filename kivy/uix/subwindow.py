@@ -296,7 +296,11 @@ class SubWindowNative:
         self._win.left = pos[0]
         self._win.top  = pos[1]
 
+        self._win.system_size = kwargs['size']
+
         self._win.title = kwargs['title']
+
+        self._win.initialized = False
 
     def open(self):
         self._win.create_window()
