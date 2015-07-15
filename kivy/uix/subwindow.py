@@ -270,10 +270,38 @@ class SubWindowNative:
     def __init__(self, **kwargs):
         from kivy.core.window import WindowClass
 
-        self._win = WindowClass()
+        self._win = WindowClass(**kwargs)
+
+        type = kwargs['type']
+
+        if type == 'resizable':
+            self._win.resizable = True
+
+        elif type == 'fixed':
+            self._win.resizable = False
+
+        elif type == 'tool':
+            self._win.resizable = False
+
+        elif type == 'borderless':
+            self._win.resizable = False
+            self._win.borderless = True
+
+        else:
+            raise SubWindowException("Unhandled window type")
+
+        pos = kwargs['pos']
+
+        self._win.position = 'custom'
+        self._win.left = pos[0]
+        self._win.top  = pos[1]
+
+        self._win.title = kwargs['title']
 
     def open(self):
         self._win.create_window()
+
+        self._win.set_title(self._win.title)
 
 
 class SubWindow(Widget, SubWindowBase):
