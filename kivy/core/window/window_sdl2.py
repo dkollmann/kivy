@@ -133,6 +133,8 @@ class SDL2MotionEventProvider(MotionEventProvider):
 class WindowSDL(WindowBase):
 
     def __init__(self, **kwargs):
+        self.resizable = None
+
         self._win = _WindowSDL2Storage()
         super(WindowSDL, self).__init__()
         self._mouse_x = self._mouse_y = -1
@@ -184,12 +186,15 @@ class WindowSDL(WindowBase):
 
             # setup !
             w, h = self.system_size
-            resizable = Config.getboolean('graphics', 'resizable')
+
+            if self.resizable is None:
+                self.resizable = Config.getboolean('graphics', 'resizable')
+
             state = (Config.get('graphics', 'window_state')
                      if self._is_desktop else None)
             self.system_size = _size = self._win.setup_window(
                 pos[0], pos[1], w, h, self.borderless,
-                self.fullscreen, resizable, state)
+                self.fullscreen, self.resizable, state)
 
             # calculate density
             sz = self._win._get_gl_size()[0]
