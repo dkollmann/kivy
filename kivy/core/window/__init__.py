@@ -572,6 +572,7 @@ class WindowBase(EventDispatcher):
         self._is_desktop = Config.getboolean('kivy', 'desktop')
 
         self._density = 1
+        self._fake_fullscreen = False
 
         # create a trigger for update/create the window when one of window
         # property changes

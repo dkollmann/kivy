@@ -165,8 +165,14 @@ class WindowSDL(WindowBase):
         self._win.set_minimum_size(self.minimum_width, self.minimum_height)
 
     def create_window(self, *largs):
+        if self._fake_fullscreen:
+            if not self.borderless:
+                self.fullscreen = self._fake_fullscreen = False
+            elif not self.fullscreen or self.fullscreen == 'auto':
+                self.borderless = self._fake_fullscreen = False
+
         if self.fullscreen == 'fake':
-            self.borderless = True
+            self.borderless = self._fake_fullscreen = True
             Logger.warning("The 'fake' fullscreen option has been "
                            "deprecated, use Window.borderless or the "
                            "borderless Config option instead.")
