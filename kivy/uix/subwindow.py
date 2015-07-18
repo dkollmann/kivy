@@ -268,6 +268,9 @@ class SubWindowBase:
 
 class SubWindowNative:
     def __init__(self, **kwargs):
+        self._created = False
+        self._open = False
+
         from kivy.core.window import WindowClass
 
         self._win = WindowClass(**kwargs)
@@ -303,9 +306,23 @@ class SubWindowNative:
         self._win.initialized = False
 
     def open(self):
-        self._win.create_window()
+        if self._open:
+            return
 
-        self._win.set_title(self._win.title)
+        if not self._created:
+            self._created = True
+
+            self._win.create_window()
+
+            self._win.set_title(self._win.title)
+
+            self._open = True
+
+    def close(self):
+        if not self._open:
+            return
+
+        self._win.close()
 
 
 class SubWindow(Widget, SubWindowBase):
@@ -574,6 +591,7 @@ class SubWindowPopup(FloatModalView, SubWindowBase):
     def __init__(self, **kwargs):
         super(SubWindowPopup, self).__init__(**kwargs)
 
+        self._open = False
         self._premax_pos = None
         self._premax_pos_hint = None
 
@@ -647,6 +665,9 @@ class SubWindowPopup(FloatModalView, SubWindowBase):
             self.owner._switch()
 
     def _close(self):
+        if not self._open:
+            return
+
         self.dismiss()
 
     def _maximize(self):
