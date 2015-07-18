@@ -270,11 +270,6 @@ class WindowBase(EventDispatcher):
 
     '''
 
-    __instance = None
-    __initialized = False
-    _fake_fullscreen = False
-    _density = 1
-
     # private properties
     _size = ListProperty([0, 0])
     _modifiers = ListProperty([])
@@ -569,21 +564,14 @@ class WindowBase(EventDispatcher):
         'on_joy_button_down', "on_joy_button_up")
 
     def __new__(cls, **kwargs):
-        if cls.__instance is None:
-            cls.__instance = EventDispatcher.__new__(cls)
-        return cls.__instance
+        return EventDispatcher.__new__(cls)
 
     def __init__(self, **kwargs):
 
-        force = kwargs.pop('force', False)
-
-        # don't init window 2 times,
-        # except if force is specified
-        if WindowBase.__instance is not None and not force:
-            return
-
         self.initialized = False
         self._is_desktop = Config.getboolean('kivy', 'desktop')
+
+        self._density = 1
 
         # create a trigger for update/create the window when one of window
         # property changes
