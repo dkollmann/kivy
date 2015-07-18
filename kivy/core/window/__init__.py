@@ -574,6 +574,8 @@ class WindowBase(EventDispatcher):
         self._density = 1
         self._fake_fullscreen = False
 
+        self._subwindow = kwargs['subwindow'] if ('subwindow' in kwargs) else False
+
         # create a trigger for update/create the window when one of window
         # property changes
         self.trigger_create_window = Clock.create_trigger(
@@ -643,9 +645,10 @@ class WindowBase(EventDispatcher):
         self.create_window()
 
         # attach modules + listener event
-        EventLoop.set_window(self)
-        Modules.register_window(self)
-        EventLoop.add_event_listener(self)
+        if not self._subwindow:
+            EventLoop.set_window(self)
+            Modules.register_window(self)
+            EventLoop.add_event_listener(self)
 
         # manage keyboard(s)
         self.configure_keyboards()

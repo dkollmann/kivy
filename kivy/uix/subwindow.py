@@ -273,6 +273,8 @@ class SubWindowNative:
 
         from kivy.core.window import WindowClass
 
+        kwargs['subwindow'] = True
+
         self._win = WindowClass(**kwargs)
 
         type = kwargs['type']

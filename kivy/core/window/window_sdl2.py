@@ -136,7 +136,10 @@ class WindowSDL(WindowBase):
         self.resizable = None
 
         self._win = _WindowSDL2Storage()
-        super(WindowSDL, self).__init__()
+
+        subwindow = kwargs['subwindow'] if ('subwindow' in kwargs) else False
+
+        super(WindowSDL, self).__init__(subwindow=subwindow)
         self._mouse_x = self._mouse_y = -1
         self._meta_keys = (KMOD_LCTRL, KMOD_RCTRL, KMOD_RSHIFT,
             KMOD_LSHIFT, KMOD_RALT, KMOD_LALT, KMOD_LMETA,
