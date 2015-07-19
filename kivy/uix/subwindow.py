@@ -376,24 +376,6 @@ class SubWindow(Widget, SubWindowBase):
         Clock.schedule_once(self._post_init)
 
     def _post_init(self, dt):
-        # When there is a popup we assume we should use it
-        if self.popup is None:
-            self._create_subwindow(
-                pos = self.pos,
-                pos_hint = self.pos_hint,
-                size = self.size,
-                size_hint = self.size_hint,
-                type = self.type,
-                title = self.title,
-                kv_file = self.kv_file,
-                minimized = self.minimized,
-                maximized = self.maximized,
-                allow_maximize = self.allow_maximize,
-                allow_minimize = self.allow_minimize,
-                allow_close = self.allow_close,
-                content = self.content
-            )
-
         if self.auto_open:
             self.open()
 
@@ -468,6 +450,24 @@ class SubWindow(Widget, SubWindowBase):
         return SubWindowPopup(auto_dismiss = False, **kwargs)
 
     def open(self):
+        # When there is a popup we assume we should use it
+        if self.popup is None and self.window is None:
+            self._create_subwindow(
+                pos = self.pos,
+                pos_hint = self.pos_hint,
+                size = self.size,
+                size_hint = self.size_hint,
+                type = self.type,
+                title = self.title,
+                kv_file = self.kv_file,
+                minimized = self.minimized,
+                maximized = self.maximized,
+                allow_maximize = self.allow_maximize,
+                allow_minimize = self.allow_minimize,
+                allow_close = self.allow_close,
+                content = self.content
+            )
+
         if self.popup is not None:
             self.popup.open()
 
