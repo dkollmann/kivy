@@ -164,9 +164,6 @@ class WindowSDL(WindowBase):
         self.bind(minimum_width=self._restrict_window,
                   minimum_height=self._restrict_window)
 
-    def id(self):
-        return self._win.id
-
     def _restrict_window(self, *args):
         self._win.set_minimum_size(self.minimum_width, self.minimum_height)
 
@@ -201,6 +198,8 @@ class WindowSDL(WindowBase):
             self.system_size = _size = self._win.setup_window(
                 pos[0], pos[1], w, h, self.borderless,
                 self.fullscreen, self.resizable, state)
+
+            self._id = self._win.id
 
             # calculate density
             sz = self._win._get_gl_size()[0]

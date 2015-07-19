@@ -576,6 +576,9 @@ class WindowBase(EventDispatcher):
 
         self._subwindow = kwargs['subwindow'] if ('subwindow' in kwargs) else False
 
+        # The id of the window. Values of <= 0 are considered invalid
+        self._id = 0
+
         # create a trigger for update/create the window when one of window
         # property changes
         self.trigger_create_window = Clock.create_trigger(
@@ -675,9 +678,6 @@ class WindowBase(EventDispatcher):
                 'fullscreen', 'borderless', 'position', 'top',
                 'left', '_size', 'system_size'):
             self.unbind(**{prop: self.trigger_create_window})
-
-    def id(self):
-        return 0
 
     def toggle_fullscreen(self):
         '''Toggle between fullscreen and windowed mode.
