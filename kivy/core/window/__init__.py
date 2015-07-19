@@ -576,6 +576,9 @@ class WindowBase(EventDispatcher):
 
         self._subwindow = kwargs['subwindow'] if ('subwindow' in kwargs) else False
 
+        # The id of the window. Values of <= 0 are considered invalid
+        self._id = 0
+
         # create a trigger for update/create the window when one of window
         # property changes
         self.trigger_create_window = Clock.create_trigger(
@@ -649,6 +652,10 @@ class WindowBase(EventDispatcher):
             EventLoop.set_window(self)
             Modules.register_window(self)
             EventLoop.add_event_listener(self)
+        else:
+            EventLoop.add_subwindow(self)
+
+        EventLoop.set_focused_window(self)
 
         # manage keyboard(s)
         self.configure_keyboards()
@@ -921,8 +928,6 @@ class WindowBase(EventDispatcher):
         pass
 
     def on_draw(self):
-        self.make_current()
-
         self.clear()
         self.render_context.draw()
 
@@ -1089,6 +1094,9 @@ class WindowBase(EventDispatcher):
         '''Event called when the window is closed'''
         Modules.unregister_window(self)
         EventLoop.remove_event_listener(self)
+
+        if self._subwindow:
+            EventLoop.remove_subwindow(self)
 
     def on_request_close(self, *largs, **kwargs):
         '''Event called before we close the window. If a bound function returns

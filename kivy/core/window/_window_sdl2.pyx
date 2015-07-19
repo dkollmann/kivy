@@ -184,21 +184,24 @@ cdef class _WindowSDL2Storage:
         elif event.type == SDL_DROPFILE:
             return ('dropfile', event.drop.file)
         elif event.type == SDL_MOUSEMOTION:
+            w = event.motion.windowID
             x = event.motion.x
             y = event.motion.y
-            return ('mousemotion', x, y)
+            return ('mousemotion', w, x, y)
         elif event.type == SDL_MOUSEBUTTONDOWN or event.type == SDL_MOUSEBUTTONUP:
+            w = event.button.windowID
             x = event.button.x
             y = event.button.y
             button = event.button.button
             action = 'mousebuttondown' if event.type == SDL_MOUSEBUTTONDOWN else 'mousebuttonup'
-            return (action, x, y, button)
+            return (action, w, x, y, button)
         elif event.type == SDL_MOUSEWHEEL:
+            w = event.button.windowID
             x = event.button.x
             y = event.button.y
             button = event.button.button
             action = 'mousewheel' + ('down' if x > 0 else 'up') if x != 0 else ('left' if y < 0 else 'right')
-            return (action, x, y, button)
+            return (action, w, x, y, button)
         elif event.type == SDL_FINGERMOTION:
             fid = event.tfinger.fingerId
             x = event.tfinger.x
@@ -234,42 +237,44 @@ cdef class _WindowSDL2Storage:
             return ('joybuttonup', event.jbutton.which, event.jbutton.button)
         elif event.type == SDL_WINDOWEVENT:
             if event.window.event == SDL_WINDOWEVENT_EXPOSED:
-                action = ('windowexposed', )
+                action = ('windowexposed', event.window.windowID)
             elif event.window.event == SDL_WINDOWEVENT_RESIZED:
-                action = ('windowresized', event.window.data1, event.window.data2)
+                action = ('windowresized', event.window.windowID, event.window.data1, event.window.data2)
             elif event.window.event == SDL_WINDOWEVENT_MINIMIZED:
-                action = ('windowminimized', )
+                action = ('windowminimized', event.window.windowID)
             elif event.window.event == SDL_WINDOWEVENT_RESTORED:
-                action = ('windowrestored', )
+                action = ('windowrestored', event.window.windowID)
             elif event.window.event == SDL_WINDOWEVENT_SHOWN:
-                action = ('windowshown', )
+                action = ('windowshown', event.window.windowID)
             elif event.window.event == SDL_WINDOWEVENT_HIDDEN:
-                action = ('windowhidden', )
+                action = ('windowhidden', event.window.windowID)
             elif event.window.event == SDL_WINDOWEVENT_ENTER:
-                action = ('windowenter', )
+                action = ('windowenter', event.window.windowID)
             elif event.window.event == SDL_WINDOWEVENT_LEAVE:
-                action = ('windowleave', )
+                action = ('windowleave', event.window.windowID)
             elif event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED:
-                action = ('windowfocusgained', )
+                action = ('windowfocusgained', event.window.windowID)
             elif event.window.event == SDL_WINDOWEVENT_FOCUS_LOST:
-                action = ('windowfocuslost', )
+                action = ('windowfocuslost', event.window.windowID)
             elif event.window.event == SDL_WINDOWEVENT_CLOSE:
-                action = ('windowclose', )
+                action = ('windowclose', event.window.windowID)
             elif event.window.event == SDL_WINDOWEVENT_MOVED:
-                action = ('windowmoved', event.window.data1, event.window.data2)
+                action = ('windowmoved', event.window.windowID, event.window.data1, event.window.data2)
             else:
                 #    print('receive unknown sdl window event', event.type)
                 pass
             return action
         elif event.type == SDL_KEYDOWN or event.type == SDL_KEYUP:
             action = 'keydown' if event.type == SDL_KEYDOWN else 'keyup'
+            wid = event.key.windowID
             mod = event.key.keysym.mod
             scancode = event.key.keysym.scancode
             key = event.key.keysym.sym
-            return (action, mod, key, scancode, None)
+            return (action, wid, mod, key, scancode, None)
         elif event.type == SDL_TEXTINPUT:
+            w = event.text.windowID
             s = event.text.text.decode('utf-8')
-            return ('textinput', s)
+            return ('textinput', w, s)
         else:
             #    print('receive unknown sdl event', event.type)
             pass
@@ -296,6 +301,10 @@ cdef class _WindowSDL2Storage:
             cdef int w, h
             SDL_GetWindowSize(self.win, &w, &h)
             return [w, h]
+
+    property id:
+        def __get__(self):
+            return SDL_GetWindowID(self.win)
 
 
 # Based on the example at

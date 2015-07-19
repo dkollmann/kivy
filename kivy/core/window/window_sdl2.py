@@ -137,6 +137,9 @@ class WindowSDL(WindowBase):
 
         self._win = _WindowSDL2Storage()
 
+        # Extract the id
+        self._id = self._win.id
+
         subwindow = kwargs['subwindow'] if ('subwindow' in kwargs) else False
 
         super(WindowSDL, self).__init__(subwindow=subwindow)
@@ -323,6 +326,7 @@ class WindowSDL(WindowBase):
                 continue
 
             action, args = event[0], event[1:]
+
             if action == 'quit':
                 if self.dispatch('on_request_close'):
                     continue
@@ -342,35 +346,39 @@ class WindowSDL(WindowBase):
                 pass
 
             elif action == 'mousemotion':
-                x, y = args
-                x, y = self._fix_mouse_pos(x, y)
-                self._mouse_x = x
-                self._mouse_y = y
+                wid, x, y = args
+                window = EventLoop.get_window(wid)
+
+                x, y = window._fix_mouse_pos(x, y)
+                window._mouse_x = x
+                window._mouse_y = y
                 # don't dispatch motion if no button are pressed
-                if len(self._mouse_buttons_down) == 0:
+                if len(window._mouse_buttons_down) == 0:
                     continue
-                self._mouse_meta = self.modifiers
-                self.dispatch('on_mouse_move', x, y, self.modifiers)
+                window._mouse_meta = self.modifiers
+                window.dispatch('on_mouse_move', x, y, self.modifiers)
 
             elif action in ('mousebuttondown', 'mousebuttonup'):
-                x, y, button = args
-                x, y = self._fix_mouse_pos(x, y)
+                wid, x, y, button = args
+                window = EventLoop.get_window(wid)
+
+                x, y = window._fix_mouse_pos(x, y)
                 btn = 'left'
                 if button == 3:
                     btn = 'right'
                 elif button == 2:
                     btn = 'middle'
                 eventname = 'on_mouse_down'
-                self._mouse_buttons_down.add(button)
+                window._mouse_buttons_down.add(button)
                 if action == 'mousebuttonup':
                     eventname = 'on_mouse_up'
-                    self._mouse_buttons_down.remove(button)
-                self._mouse_x = x
-                self._mouse_y = y
-                self.dispatch(eventname, x, y, btn, self.modifiers)
+                    window._mouse_buttons_down.remove(button)
+                window._mouse_x = x
+                window._mouse_y = y
+                window.dispatch(eventname, x, y, btn, self.modifiers)
             elif action.startswith('mousewheel'):
                 self._update_modifiers()
-                x, y, button = args
+                wid, x, y, button = args
                 btn = 'scrolldown'
                 if action.endswith('up'):
                     btn = 'scrollup'
@@ -379,41 +387,65 @@ class WindowSDL(WindowBase):
                 elif action.endswith('left'):
                     btn = 'scrollleft'
 
-                self._mouse_meta = self.modifiers
-                self._mouse_btn = btn
+                window = EventLoop.get_window(wid)
+
+                window._mouse_meta = self.modifiers
+                window._mouse_btn = btn
                 #times = x if y == 0 else y
                 #times = min(abs(times), 100)
                 #for k in range(times):
-                self._mouse_down = True
-                self.dispatch('on_mouse_down',
-                    self._mouse_x, self._mouse_y, btn, self.modifiers)
-                self._mouse_down = False
-                self.dispatch('on_mouse_up',
-                    self._mouse_x, self._mouse_y, btn, self.modifiers)
+                window._mouse_down = True
+                window.dispatch('on_mouse_down',
+                    window._mouse_x, window._mouse_y, btn, self.modifiers)
+                window._mouse_down = False
+                window.dispatch('on_mouse_up',
+                    window._mouse_x, window._mouse_y, btn, self.modifiers)
 
             elif action == 'dropfile':
                 dropfile = args
                 self.dispatch('on_dropfile', dropfile[0])
             # video resize
             elif action == 'windowresized':
-                self._size = self._win.window_size
+                wid = args[0]
+                window = EventLoop.get_window(wid)
+
+                window._size = window._win.window_size
                 # don't use trigger here, we want to delay the resize event
-                cb = self._do_resize
+                cb = window._do_resize
                 Clock.unschedule(cb)
                 Clock.schedule_once(cb, .1)
 
             elif action == 'windowresized':
-                self.canvas.ask_update()
+                wid = args[0]
+                window = EventLoop.get_window(wid)
+
+                window.canvas.ask_update()
 
             elif action == 'windowrestored':
-                self.canvas.ask_update()
+                wid = args[0]
+                window = EventLoop.get_window(wid)
+
+                window.canvas.ask_update()
 
             elif action == 'windowexposed':
-                self.canvas.ask_update()
+                wid = args[0]
+                window = EventLoop.get_window(wid)
+
+                window.canvas.ask_update()
 
             elif action == 'windowminimized':
                 if Config.getboolean('kivy', 'pause_on_minimize'):
-                    self.do_pause()
+                    wid = args[0]
+                    window = EventLoop.get_window(wid)
+
+                    if not window._subwindow:
+                        self.do_pause()
+
+            elif action == 'windowfocusgained':
+                wid = args[0]
+                window = EventLoop.get_window(wid)
+
+                EventLoop.set_focused_window(window)
 
             elif action == 'joyaxismotion':
                 stickid, axisid, value = args
@@ -432,7 +464,8 @@ class WindowSDL(WindowBase):
                 self.dispatch('on_joy_button_up', stickid, buttonid)
 
             elif action in ('keydown', 'keyup'):
-                mod, key, scancode, kstr = args
+                wid, mod, key, scancode, kstr = args
+                window = EventLoop.get_window(wid)
 
                 key_swap = {
                     SDLK_LEFT: 276, SDLK_RIGHT: 275, SDLK_UP: 273,
@@ -480,21 +513,23 @@ class WindowSDL(WindowBase):
                 #    return
 
                 if action == 'keyup':
-                    self.dispatch('on_key_up', key, scancode)
+                    window.dispatch('on_key_up', key, scancode)
                     continue
 
                 # don't dispatch more key if down event is accepted
-                if self.dispatch('on_key_down', key,
+                if window.dispatch('on_key_down', key,
                                  scancode, kstr,
                                  self.modifiers):
                     continue
-                self.dispatch('on_keyboard', key,
+                window.dispatch('on_keyboard', key,
                               scancode, kstr,
                               self.modifiers)
 
             elif action == 'textinput':
-                text = args[0]
-                self.dispatch('on_textinput', text)
+                wid, text = args
+                window = EventLoop.get_window(wid)
+
+                window.dispatch('on_textinput', text)
                 # XXX on IOS, keydown/up don't send unicode anymore.
                 # With latest sdl, the text is sent over textinput
                 # Right now, redo keydown/up, but we need to seperate both call

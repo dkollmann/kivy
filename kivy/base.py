@@ -109,6 +109,8 @@ class EventLoopBase(EventDispatcher):
         self.input_providers_autoremove = []
         self.event_listeners = []
         self.window = None
+        self.focused_window = None
+        self.subwindows = []
         self.me_list = []
 
     @property
@@ -129,6 +131,41 @@ class EventLoopBase(EventDispatcher):
         '''Set the window used for the event loop.
         '''
         self.window = window
+
+    def set_focused_window(self, window):
+        '''Store the window which is currently focused.
+        '''
+        self.focused_window = window
+
+    def add_subwindow(self, window):
+        '''Add a sub window to the event loop.
+        '''
+        assert window._subwindow
+
+        self.subwindows.append(window)
+
+    def remove_subwindow(self, window):
+        '''Remove a sub window from the event loop.
+        '''
+        assert window._subwindow
+
+        self.subwindows.remove(window)
+
+    def get_window(self, id):
+        '''Get a window based on its id. If the id is zero, the currently focused window will be returned.
+        '''
+        if id > 0:
+            # Find the window with the given id
+            for w in self.subwindows:
+                if w._id == id:
+                    return w
+
+        # Return the currently focused window
+        if self.focused_window is not None:
+            return self.focused_window
+
+        # Return the main window as a fallback
+        return self.window
 
     def add_input_provider(self, provider, auto_remove=False):
         '''Add a new input provider to listen for touch events.
