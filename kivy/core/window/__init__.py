@@ -658,7 +658,7 @@ class WindowBase(EventDispatcher):
 
             EventLoop.set_window(self)
             Modules.register_window(self)
-            EventLoop.add_event_listener(self)
+            #EventLoop.add_event_listener(self)
 
             # manage keyboard(s)
             self.configure_keyboards()

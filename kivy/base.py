@@ -261,6 +261,9 @@ class EventLoopBase(EventDispatcher):
             for listener in self.event_listeners:
                 listener.dispatch('on_motion', etype, me)
 
+        # dispatch to window
+        me.window.dispatch('on_motion', etype, me)
+
         # dispatch grabbed touch
         me.grab_state = True
         for _wid in me.grab_list[:]:
@@ -390,11 +393,11 @@ class EventLoopBase(EventDispatcher):
                 w.dispatch('on_flip')
 
         # don't loop if we don't have listeners !
-        if len(self.event_listeners) == 0:
-            Logger.error('Base: No event listeners have been created')
-            Logger.error('Base: Application will leave')
-            self.exit()
-            return False
+        #if len(self.event_listeners) == 0:
+        #    Logger.error('Base: No event listeners have been created')
+        #    Logger.error('Base: Application will leave')
+        #    self.exit()
+        #    return False
 
         return self.quit
 

@@ -156,7 +156,7 @@ class MotionEvent(MotionEventBase):
          'is_triple_tap', 'triple_tap_time',
          'ud')
 
-    def __init__(self, device, id, args):
+    def __init__(self, device, id, window, args):
         if self.__class__ == MotionEvent:
             raise NotImplementedError('class MotionEvent is abstract')
         MotionEvent.__uniq_id += 1
@@ -282,6 +282,9 @@ class MotionEvent(MotionEventBase):
         #: User data dictionary. Use this dictionary to save your own data on
         #: the touch.
         self.ud = EnhancedDictionary()
+
+        #: The window the event belongs to.
+        self.window = window
 
         self.depack(args)
 

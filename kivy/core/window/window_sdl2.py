@@ -96,7 +96,6 @@ class SDL2MotionEvent(MotionEvent):
         self.is_touch = True
         self.profile = ('pos', )
         self.sx, self.sy = args
-        win = EventLoop.window
         super(SDL2MotionEvent, self).depack(args)
 
 

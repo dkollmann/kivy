@@ -210,7 +210,7 @@ class MouseMotionEventProvider(MotionEventProvider):
         if do_graphics:
             args += [not self.multitouch_on_demenad]
         self.current_drag = cur = MouseMotionEvent(self.device, id=id,
-                                                   args=args)
+                                                   args=args, window=self.window)
         cur.is_double_tap = is_double_tap
         self.touches[id] = cur
         if do_graphics:
