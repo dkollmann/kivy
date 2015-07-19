@@ -155,7 +155,11 @@ class EventLoopBase(EventDispatcher):
         '''Get a window based on its id. If the id is zero, the currently focused window will be returned.
         '''
         if id > 0:
-            # Find the window with the given id
+            # Try the main window first
+            if self.window._id == id:
+                return self.window
+
+            # Find a sub window with the given id
             for w in self.subwindows:
                 if w._id == id:
                     return w
