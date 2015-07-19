@@ -271,6 +271,8 @@ class SubWindowNative:
         self._created = False
         self._open = False
 
+        self.content = kwargs['content']
+
         from kivy.core.window import WindowClass
 
         kwargs['subwindow'] = True
@@ -307,6 +309,12 @@ class SubWindowNative:
 
         self._win.initialized = False
 
+    def add_widget(self, widget, canvas=None):
+        self._win.add_widget(widget, canvas)
+
+    def remove_widget(self, widget):
+        self._win.remove_widget(widget)
+
     def open(self):
         if self._open:
             return
@@ -317,6 +325,11 @@ class SubWindowNative:
             self._win.create_window()
 
             self._win.set_title(self._win.title)
+
+            if self.content is not None:
+                self._win.add_widget(self.content)
+
+                self.content = None
 
             self._open = True
 
@@ -423,6 +436,8 @@ class SubWindow(Widget, SubWindowBase):
                 if not content is None:
                     self.content = content
 
+            kwargs['content'] = self.content
+
         if SubWindow.UseNativeWindow and self.allow_native:
             self.window = self._create_window(**kwargs)
         else:
@@ -439,10 +454,6 @@ class SubWindow(Widget, SubWindowBase):
 
     def _create_window(self, **kwargs):
         w = SubWindowNative(**kwargs)
-
-        #w.set_title(self.title)
-
-        #w.add_widget(self.content)
 
         return w
 
