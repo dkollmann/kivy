@@ -915,8 +915,11 @@ class WindowBase(EventDispatcher):
     def get_parent_layout(self):
         return None
 
+    def makeCurrent(self):
+        pass
+
     def on_draw(self):
-        self._win.makeCurrent()
+        self.makeCurrent()
 
         self.clear()
         self.render_context.draw()

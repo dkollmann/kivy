@@ -566,6 +566,9 @@ class WindowSDL(WindowBase):
                 else:
                     pass
 
+    def makeCurrent(self):
+        self._win.makeCurrent()
+
     #
     # Pygame wrapper
     #
