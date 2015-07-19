@@ -916,6 +916,8 @@ class WindowBase(EventDispatcher):
         return None
 
     def on_draw(self):
+        self._win.makeCurrent()
+
         self.clear()
         self.render_context.draw()
 
