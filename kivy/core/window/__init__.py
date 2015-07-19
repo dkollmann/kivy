@@ -584,9 +584,10 @@ class WindowBase(EventDispatcher):
         self.trigger_create_window = Clock.create_trigger(
             self.create_window, -1)
 
-        # Create a trigger for updating the keyboard height
-        self.trigger_keyboard_height = Clock.create_trigger(
-            self._upd_kbd_height, .5)
+        if not self._subwindow:
+            # Create a trigger for updating the keyboard height
+            self.trigger_keyboard_height = Clock.create_trigger(
+                self._upd_kbd_height, .5)
 
         # set the default window parameter according to the configuration
         if 'borderless' not in kwargs:
@@ -627,16 +628,22 @@ class WindowBase(EventDispatcher):
 
         # bind all the properties that need to recreate the window
         self._bind_create_window()
-        self.bind(size=self.trigger_keyboard_height,
-                  rotation=self.trigger_keyboard_height)
 
-        self.bind(softinput_mode=lambda *dt: self.update_viewport(),
-                  keyboard_height=lambda *dt: self.update_viewport())
+        if not self._subwindow:
+            self.bind(size=self.trigger_keyboard_height,
+                    rotation=self.trigger_keyboard_height)
 
-        # init privates
-        self._system_keyboard = Keyboard(window=self)
-        self._keyboards = {'system': self._system_keyboard}
-        self._vkeyboard_cls = None
+            self.bind(softinput_mode=lambda *dt: self.update_viewport(),
+                    keyboard_height=lambda *dt: self.update_viewport())
+
+            # init privates
+            self._system_keyboard = Keyboard(window=self)
+            self._keyboards = {'system': self._system_keyboard}
+            self._vkeyboard_cls = None
+        else:
+            self._system_keyboard = None
+            self._keyboards = None
+            self._vkeyboard_cls = None
 
         self.children = []
         self.parent = self
@@ -652,13 +659,13 @@ class WindowBase(EventDispatcher):
             EventLoop.set_window(self)
             Modules.register_window(self)
             EventLoop.add_event_listener(self)
+
+            # manage keyboard(s)
+            self.configure_keyboards()
         else:
             EventLoop.add_subwindow(self)
 
         EventLoop.set_focused_window(self)
-
-        # manage keyboard(s)
-        self.configure_keyboards()
 
         # assign the default context of the widget creation
         if not hasattr(self, '_context'):
@@ -1004,22 +1011,29 @@ class WindowBase(EventDispatcher):
         if self._density != 1:
             w, h = self.size
 
-        smode = self.softinput_mode
-        target = self._system_keyboard.target
-        targettop = target.to_window(0, target.y)[1] if target else 0
-        kheight = self.keyboard_height
+        if self._system_keyboard is not None:
+            smode = self.softinput_mode
+            target = self._system_keyboard.target
+            targettop = target.to_window(0, target.y)[1] if target else 0
+            kheight = self.keyboard_height
 
-        w2, h2 = w / 2., h / 2.
-        r = radians(self.rotation)
+            w2, h2 = w / 2., h / 2.
+            r = radians(self.rotation)
 
-        x, y = 0, 0
-        _h = h
-        if smode == 'pan':
-            y = kheight
-        elif smode == 'below_target':
-            y = 0 if kheight < targettop else (kheight - targettop) + dp(9)
-        if smode == 'scale':
-            _h -= kheight
+            x, y = 0, 0
+            _h = h
+            if smode == 'pan':
+                y = kheight
+            elif smode == 'below_target':
+                y = 0 if kheight < targettop else (kheight - targettop) + dp(9)
+            if smode == 'scale':
+                _h -= kheight
+        else:
+            w2, h2 = w / 2., h / 2.
+            r = radians(self.rotation)
+
+            x, y = 0, 0
+            _h = h
 
         # prepare the viewport
         glViewport(x, y, w, _h)
