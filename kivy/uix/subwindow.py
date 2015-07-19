@@ -310,6 +310,8 @@ class SubWindowNative:
 
         self._win.initialized = False
 
+        self._win.bind(on_close=self.close)
+
     def add_widget(self, widget, canvas=None):
         self._win.add_widget(widget, canvas)
 
@@ -338,7 +340,7 @@ class SubWindowNative:
 
             self._open = True
 
-    def close(self):
+    def close(self, *args):
         if not self._open:
             return
 
@@ -424,7 +426,7 @@ class SubWindow(Widget, SubWindowBase):
     def build(self):
         return None
 
-    def _create_subwindow(self, **kwargs):
+    def _load_content(self):
         if self.content is None:
             if len(self.kv_file) > 0:
                 if __debug__:
@@ -445,7 +447,10 @@ class SubWindow(Widget, SubWindowBase):
                 if not content is None:
                     self.content = content
 
-            kwargs['content'] = self.content
+    def _create_subwindow(self, **kwargs):
+        self._load_content()
+
+        kwargs['content'] = self.content
 
         if SubWindow.UseNativeWindow and self.allow_native:
             self.window = self._create_window(**kwargs)
