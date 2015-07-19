@@ -384,6 +384,11 @@ class EventLoopBase(EventDispatcher):
             window.dispatch('on_draw')
             window.dispatch('on_flip')
 
+        for w in self.subwindows:
+            if w.canvas.needs_redraw:
+                w.dispatch('on_draw')
+                w.dispatch('on_flip')
+
         # don't loop if we don't have listeners !
         if len(self.event_listeners) == 0:
             Logger.error('Base: No event listeners have been created')
