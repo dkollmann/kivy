@@ -137,9 +137,6 @@ class WindowSDL(WindowBase):
 
         self._win = _WindowSDL2Storage()
 
-        # Extract the id
-        self._id = self._win.id
-
         subwindow = kwargs['subwindow'] if ('subwindow' in kwargs) else False
 
         super(WindowSDL, self).__init__(subwindow=subwindow)
@@ -166,6 +163,9 @@ class WindowSDL(WindowBase):
 
         self.bind(minimum_width=self._restrict_window,
                   minimum_height=self._restrict_window)
+
+    def id(self):
+        return self._win.id
 
     def _restrict_window(self, *args):
         self._win.set_minimum_size(self.minimum_width, self.minimum_height)

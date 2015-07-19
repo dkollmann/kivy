@@ -304,7 +304,9 @@ cdef class _WindowSDL2Storage:
 
     property id:
         def __get__(self):
-            return SDL_GetWindowID(self.win)
+            cdef int id
+            id = SDL_GetWindowID(self.win)
+            return id
 
 
 # Based on the example at
