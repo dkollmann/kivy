@@ -122,7 +122,7 @@ class MouseMotionEvent(MotionEvent):
 class MouseMotionEventProvider(MotionEventProvider):
     __handlers__ = {}
 
-    def __init__(self, device, args):
+    def __init__(self, device, args, window=None):
         super(MouseMotionEventProvider, self).__init__(device, args)
         self.waiting_event = deque()
         self.touches = {}
@@ -132,6 +132,7 @@ class MouseMotionEventProvider(MotionEventProvider):
         self.disable_on_activity = False
         self.disable_multitouch = False
         self.multitouch_on_demenad = False
+        self.window = window if window is not None else EventLoop.window
 
         # split arguments
         args = args.split(',')
@@ -150,21 +151,35 @@ class MouseMotionEventProvider(MotionEventProvider):
 
     def start(self):
         '''Start the mouse provider'''
-        if not EventLoop.window:
+        if not self.window:
             return
-        EventLoop.window.bind(
+        self.window.bind(
             on_mouse_move=self.on_mouse_motion,
             on_mouse_down=self.on_mouse_press,
             on_mouse_up=self.on_mouse_release)
 
     def stop(self):
         '''Stop the mouse provider'''
-        if not EventLoop.window:
+        if not self.window:
             return
-        EventLoop.window.unbind(
+        self.window.unbind(
             on_mouse_move=self.on_mouse_motion,
             on_mouse_down=self.on_mouse_press,
             on_mouse_up=self.on_mouse_release)
+
+    def start_for_subwindow(self, window):
+        # Do handling only on the main instance
+        if self.window is EventLoop.window:
+            p = MouseMotionEventProvider('mouse', '', window)
+
+            EventLoop.add_input_provider(p, False)
+
+            p.start()
+
+    def stop_for_subwindow(self, window):
+        # Do handling only on the mein instance
+        if self.window is window:
+            EventLoop.remove_input_provider(self)
 
     def test_activity(self):
         if not self.disable_on_activity:
@@ -182,7 +197,7 @@ class MouseMotionEventProvider(MotionEventProvider):
         return False
 
     def find_touch(self, x, y):
-        factor = 10. / EventLoop.window.system_size[0]
+        factor = 10. / self.window.system_size[0]
         for t in self.touches.values():
             if abs(x - t.sx) < factor and abs(y - t.sy) < factor:
                 return t
@@ -199,7 +214,7 @@ class MouseMotionEventProvider(MotionEventProvider):
         cur.is_double_tap = is_double_tap
         self.touches[id] = cur
         if do_graphics:
-            cur.update_graphics(EventLoop.window, True)
+            cur.update_graphics(self.window, True)
         self.waiting_event.append(('begin', cur))
         return cur
 
@@ -209,10 +224,10 @@ class MouseMotionEventProvider(MotionEventProvider):
         del self.touches[cur.id]
         cur.update_time_end()
         self.waiting_event.append(('end', cur))
-        cur.clear_graphics(EventLoop.window)
+        cur.clear_graphics(self.window)
 
     def on_mouse_motion(self, win, x, y, modifiers):
-        width, height = EventLoop.window.system_size
+        width, height = self.window.system_size
         rx = x / float(width)
         ry = 1. - y / float(height)
         if self.current_drag:
@@ -229,7 +244,7 @@ class MouseMotionEventProvider(MotionEventProvider):
     def on_mouse_press(self, win, x, y, button, modifiers):
         if self.test_activity():
             return
-        width, height = EventLoop.window.system_size
+        width, height = self.window.system_size
         rx = x / float(width)
         ry = 1. - y / float(height)
         new_me = self.find_touch(rx, ry)

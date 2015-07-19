@@ -78,6 +78,7 @@ from kivy.logger import Logger
 from kivy.lang import Builder
 from kivy.resources import resource_find
 from kivy.clock import Clock
+from kivy.base import EventLoop
 
 from kivy.uix.floatmodalview import FloatModalView
 from kivy.uix.widget import Widget
@@ -331,11 +332,19 @@ class SubWindowNative:
 
                 self.content = None
 
+            # Register input providers
+            for p in EventLoop.input_providers:
+                p.start_for_subwindow(self._win)
+
             self._open = True
 
     def close(self):
         if not self._open:
             return
+
+        # Unregister input providers
+        for p in EventLoop.input_providers:
+            p.stop_for_subwindow(self._win)
 
         self._win.close()
 

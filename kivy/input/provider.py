@@ -38,3 +38,13 @@ class MotionEventProvider(object):
         `dispatch_fn` argument.
         '''
         pass
+
+    def start_for_subwindow(self, window):
+        '''Start the provider for a created sub window.
+        '''
+        pass
+
+    def stop_for_subwindow(self, window):
+        '''Stop the provider for a created sub window.
+        '''
+        pass
