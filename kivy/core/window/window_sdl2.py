@@ -225,10 +225,11 @@ class WindowSDL(WindowBase):
             return
 
         # auto add input provider
-        Logger.info('Window: auto add sdl2 input provider')
-        from kivy.base import EventLoop
-        SDL2MotionEventProvider.win = self
-        EventLoop.add_input_provider(SDL2MotionEventProvider('sdl', ''))
+        if not self._subwindow:
+            Logger.info('Window: auto add sdl2 input provider')
+            from kivy.base import EventLoop
+            SDL2MotionEventProvider.win = self
+            EventLoop.add_input_provider(SDL2MotionEventProvider('sdl', ''))
 
         # set window icon before calling set_mode
         try:
