@@ -644,11 +644,11 @@ class WindowBase(EventDispatcher):
         # before creating the window
         import kivy.core.gl  # NOQA
 
-        # configure the window
-        self.create_window()
-
         # attach modules + listener event
         if not self._subwindow:
+            # configure the window
+            self.create_window()
+
             EventLoop.set_window(self)
             Modules.register_window(self)
             EventLoop.add_event_listener(self)
