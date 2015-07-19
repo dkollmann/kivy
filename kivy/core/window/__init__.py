@@ -868,6 +868,8 @@ class WindowBase(EventDispatcher):
             pos=self._update_childsize)
 
     def clear(self):
+        self.make_current()
+
         '''Clear the window with the background color'''
         # XXX FIXME use late binding
         from kivy.graphics.opengl import glClearColor, glClear, \
@@ -915,11 +917,11 @@ class WindowBase(EventDispatcher):
     def get_parent_layout(self):
         return None
 
-    def makeCurrent(self):
+    def make_current(self):
         pass
 
     def on_draw(self):
-        self.makeCurrent()
+        self.make_current()
 
         self.clear()
         self.render_context.draw()
