@@ -164,6 +164,8 @@ cdef class _WindowSDL2Storage:
     def teardown_window(self):
         SDL_GL_DeleteContext(self.ctx)
         SDL_DestroyWindow(self.win)
+
+    def quit(self):
         SDL_Quit()
 
     def show_keyboard(self):

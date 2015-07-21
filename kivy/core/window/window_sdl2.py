@@ -160,6 +160,8 @@ class WindowSDL(WindowBase):
                     281: 'pgdown'}
         self._mouse_buttons_down = set()
 
+        self._closing = False
+
         self.bind(minimum_width=self._restrict_window,
                   minimum_height=self._restrict_window)
 
@@ -250,7 +252,17 @@ class WindowSDL(WindowBase):
             Logger.exception('Window: cannot set icon')
 
     def close(self):
+        if self._closing:
+            return
+
+        self._closing = True
+
         self._win.teardown_window()
+
+        # If this is the main window we must trigger quit for sdl
+        if not self._subwindow:
+            self._win.quit()
+
         self.dispatch('on_close')
 
     def maximize(self):
@@ -448,6 +460,16 @@ class WindowSDL(WindowBase):
                 window = EventLoop.get_window(wid)
 
                 EventLoop.set_focused_window(window)
+
+            elif action == 'windowclose':
+                wid = args[0]
+                window = EventLoop.get_window(wid)
+
+                # Only handle close for sub windows as the main window will trigger 'quit'
+                if window is not EventLoop.window:
+                    if window.dispatch('on_request_close'):
+                        continue
+                    window.close()
 
             elif action == 'joyaxismotion':
                 stickid, axisid, value = args

@@ -269,7 +269,6 @@ class SubWindowBase:
 
 class SubWindowNative:
     def __init__(self, **kwargs):
-        self._created = False
         self._open = False
 
         self.content = kwargs['content']
@@ -322,27 +321,26 @@ class SubWindowNative:
         if self._open:
             return
 
-        if not self._created:
-            self._created = True
+        self._win.create_window()
 
-            self._win.create_window()
+        self._win.set_title(self._win.title)
 
-            self._win.set_title(self._win.title)
+        if self.content is not None:
+            self._win.add_widget(self.content)
 
-            if self.content is not None:
-                self._win.add_widget(self.content)
+            self.content = None
 
-                self.content = None
+        # Register input providers
+        for p in EventLoop.input_providers:
+            p.start_for_subwindow(self._win)
 
-            # Register input providers
-            for p in EventLoop.input_providers:
-                p.start_for_subwindow(self._win)
-
-            self._open = True
+        self._open = True
 
     def close(self, *args):
         if not self._open:
             return
+
+        self._open = False
 
         # Unregister input providers
         for p in EventLoop.input_providers:
