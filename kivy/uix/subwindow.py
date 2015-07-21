@@ -272,44 +272,28 @@ class SubWindowNative:
         self._open = False
 
         self.content = kwargs['content']
-
-        from kivy.core.window import WindowClass
-
-        kwargs['subwindow'] = True
-
-        self._win = WindowClass(**kwargs)
+        self.title = kwargs['title']
+        self.pos = kwargs['pos']
+        self.size = kwargs['size']
+        self.borderless = False
 
         type = kwargs['type']
 
         if type == 'resizable':
-            self._win.resizable = True
+            self.resizable = True
 
         elif type == 'fixed':
-            self._win.resizable = False
+            self.resizable = False
 
         elif type == 'tool':
-            self._win.resizable = False
+            self.resizable = False
 
         elif type == 'borderless':
-            self._win.resizable = False
-            self._win.borderless = True
+            self.resizable = False
+            self.borderless = True
 
         else:
             raise SubWindowException("Unhandled window type")
-
-        pos = kwargs['pos']
-
-        self._win.position = 'custom'
-        self._win.left = pos[0]
-        self._win.top  = pos[1]
-
-        self._win.system_size = kwargs['size']
-
-        self._win.title = kwargs['title']
-
-        self._win.initialized = False
-
-        self._win.bind(on_close=self.close)
 
     def add_widget(self, widget, canvas=None):
         self._win.add_widget(widget, canvas)
@@ -321,9 +305,25 @@ class SubWindowNative:
         if self._open:
             return
 
+        from kivy.core.window import WindowClass
+
+        self._win = WindowClass(subwindow=True, content=self.content)
+
+        self._win.resizable = self.resizable
+        self._win.borderless = self.borderless
+        self._win.position = 'custom'
+        self._win.left = self.pos[0]
+        self._win.top  = self.pos[1]
+
+        self._win.system_size = self.size
+
+        self._win.initialized = False
+
+        self._win.bind(on_close=self.close)
+
         self._win.create_window()
 
-        self._win.set_title(self._win.title)
+        self._win.set_title(self.title)
 
         if self.content is not None:
             self._win.add_widget(self.content)
@@ -347,6 +347,8 @@ class SubWindowNative:
             p.stop_for_subwindow(self._win)
 
         self._win.close()
+
+        self._win = None
 
 
 class SubWindow(Widget, SubWindowBase):
