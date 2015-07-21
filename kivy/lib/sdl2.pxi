@@ -56,6 +56,7 @@ cdef extern from "SDL.h":
         SDL_GL_CONTEXT_EGL
         SDL_GL_CONTEXT_FLAGS
         SDL_GL_CONTEXT_PROFILE_MASK
+        SDL_GL_SHARE_WITH_CURRENT_CONTEXT
 
     ctypedef enum SDL_BlendMode:
         SDL_BLENDMODE_NONE = 0x00000000

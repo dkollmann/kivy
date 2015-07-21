@@ -194,9 +194,12 @@ class WindowSDL(WindowBase):
 
             state = (Config.get('graphics', 'window_state')
                      if self._is_desktop else None)
+
+            share_context = self._subwindow
+
             self.system_size = _size = self._win.setup_window(
                 pos[0], pos[1], w, h, self.borderless,
-                self.fullscreen, self.resizable, state)
+                self.fullscreen, self.resizable, state, share_context)
 
             self._id = self._win.id
 
