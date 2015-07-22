@@ -328,8 +328,6 @@ class SubWindowNative:
         if self.content is not None:
             self._win.add_widget(self.content)
 
-            self.content = None
-
         # Register input providers
         for p in EventLoop.input_providers:
             p.start_for_subwindow(self._win)
@@ -345,6 +343,9 @@ class SubWindowNative:
         # Unregister input providers
         for p in EventLoop.input_providers:
             p.stop_for_subwindow(self._win)
+
+        if self.content is not None:
+            self._win.remove_widget(self.content)
 
         self._win.close()
 
