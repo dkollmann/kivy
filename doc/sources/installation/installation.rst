@@ -19,8 +19,8 @@ or 3.x (3.3 <= x)
 interpreter. If you want to enable features like windowing (i.e. open a Window),
 audio/video playback or spelling correction, additional dependencies must
 be available. For these, we recommend `Pygame <http://pygame.org>`_, `Gst-Python
-<http://www.gstreamer.net/modules/gst-python.html>`_ and `Enchant
-<http://www.rfk.id.au/software/pyenchant/>`_, respectively.
+<http://www.gstreamer.net/modules/gst-python.html>`_ and `PyEnchant
+<https://pythonhosted.org/pyenchant/>`_, respectively.
 
 +--------------------------------------------------------------------------------------------------------------------------+
 | NOTE: Currently, packaging only works with Python 2.7. We are working on Python 3.3+ support, but for now if you plan to |
@@ -32,7 +32,7 @@ Other optional libraries (mutually independent) are:
     * `OpenCV 2.0 <http://sourceforge.net/projects/opencvlibrary/>`_ -- Camera input.
     * `PIL <http://www.pythonware.com/products/pil/index.htm>`_ -- Image and text display.
     * `PyCairo <http://www.cairographics.org/pycairo/>`_ -- Text display.
-    * `PyEnchant <http://www.rfk.id.au/software/pyenchant/>`_ -- Spelling correction.
+    * `PyEnchant <https://pythonhosted.org/pyenchant/>`_ -- Spelling correction.
     * `PyGST <http://gstreamer.freedesktop.org/ + http://pygstdocs.berlios.de/>`_ -- Audio/video playback and camera input.
 
 
@@ -91,7 +91,7 @@ that will install all necessary packages::
       build-essential libgl1-mesa-dev-lts-quantal libgles2-mesa-dev-lts-quantal\ 
       python-pip
 
-For older versions of Ubuntu, this one should work::
+For Ubuntu 15.04 and versions older than 12.04, this one should work::
 
     $ sudo apt-get install python-setuptools python-pygame python-opengl \
       python-gst0.10 python-enchant gstreamer0.10-plugins-good python-dev \

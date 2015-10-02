@@ -21,7 +21,7 @@ Manual installation
 
     gpg --recv-keys 0C667A3E
     gpg -a --export 0C667A3E | sudo apt-key add -
-    
+
 #. Install the dependencies::
 
     sudo apt-get update
@@ -81,6 +81,32 @@ You could start the showcase::
     cd kivy/examples/3Drendering
     python main.py
 
+Change the default screen to use
+--------------------------------
+
+You can set an environment variable named `KIVY_BCM_DISPMANX_ID` in order to
+change the display used to run Kivy. For example, to force the display to be
+HDMI, use::
+
+    KIVY_BCM_DISPMANX_ID=2 python main.py
+
+Check the :doc:`guide/environment` documentation to see all the possible
+value.
+
+Using Official RPi touch display
+--------------------------------
+
+If you are using the official Raspberry Pi touch display, you need to
+configure Kivy to use it as an input source. To do this, edit the file
+``~/.kivy/config.ini`` and go to the ``[input]`` section. Add this:
+
+::
+
+    mouse = mouse
+    mtdev_%(name)s = probesysfs,provider=mtdev
+    hid_%(name)s = probesysfs,provider=hidinput
+
+For more information about configuring Kivy, see :ref:`configure kivy`
 
 Where to go ?
 -------------
@@ -91,4 +117,3 @@ adapt the GPIO pin in the code.
 
 A video to see what we were doing with it:
 http://www.youtube.com/watch?v=NVM09gaX6pQ
-

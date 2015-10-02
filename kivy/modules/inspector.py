@@ -337,9 +337,9 @@ class Inspector(FloatLayout):
     at_bottom = BooleanProperty(True)
 
     def __init__(self, **kwargs):
+        self.win = kwargs.pop('win', None)
         super(Inspector, self).__init__(**kwargs)
         self.avoid_bring_to_top = False
-        self.win = kwargs.get('win')
         with self.canvas.before:
             self.gcolor = Color(1, 0, 0, .25)
             PushMatrix()
@@ -522,8 +522,7 @@ class Inspector(FloatLayout):
         node = None
         wk_widget = weakref.ref(widget)
         for key in keys:
-            text = '%s' % key
-            node = TreeViewProperty(text=text, key=key, widget_ref=wk_widget)
+            node = TreeViewProperty(key=key, widget_ref=wk_widget)
             node.bind(is_selected=self.show_property)
             try:
                 widget.bind(**{key: partial(
